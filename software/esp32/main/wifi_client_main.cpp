@@ -42,9 +42,12 @@
 #include "lwip/dns.h"
 
 #include <jsmn.h>
+#define NUM_LEDS 1
+#include <ws2812_control.h>
+
 
 // #include "utils.h"
-#include "mcp_api.h"
+#include <mcp_api.h>
 #include <reader.h>
 #include <light.h>
 #include <switch.h>
@@ -62,6 +65,13 @@
 #define PORT CONFIG_PORT
 
 #define CLIENT_TAG "06+Luigi+Laser+-+"
+
+
+// #define LED_RMT_TX_GPIO 23
+
+#define RED   0xFF0000
+#define GREEN 0x00FF00
+#define BLUE  0x0000FF
 
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
@@ -121,6 +131,13 @@ void init(void)
 {
   card_reader.init();
   state = 0;
+
+  ws2812_control_init();
+
+  struct led_state new_state;
+  new_state.leds[0] = RED;
+
+  ws2812_write_leds(new_state);
 }
     
 static esp_err_t event_handler(void *ctx, system_event_t *event)
