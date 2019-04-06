@@ -1651,6 +1651,39 @@ Operational amplifiers,  comparators, voltage regulators, ADCs, DACs, etc.&lt;p&
 </package3d>
 </packages3d>
 </library>
+<library name="led" urn="urn:adsk.eagle:library:259">
+<description>&lt;b&gt;LEDs&lt;/b&gt;&lt;p&gt;
+&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;&lt;br&gt;
+Extended by Federico Battaglin &lt;author&gt;&amp;lt;federico.rd@fdpinternational.com&amp;gt;&lt;/author&gt; with DUOLED</description>
+<packages>
+<package name="LED5MM" urn="urn:adsk.eagle:footprint:15655/1" library_version="4">
+<description>&lt;B&gt;LED&lt;/B&gt;&lt;p&gt;
+5 mm, round</description>
+<wire x1="2.54" y1="-1.905" x2="2.54" y2="1.905" width="0.2032" layer="21"/>
+<wire x1="2.54" y1="-1.905" x2="2.54" y2="1.905" width="0.254" layer="21" curve="-286.260205"/>
+<wire x1="-1.143" y1="0" x2="0" y2="1.143" width="0.1524" layer="51" curve="-90"/>
+<wire x1="0" y1="-1.143" x2="1.143" y2="0" width="0.1524" layer="51" curve="90"/>
+<wire x1="-1.651" y1="0" x2="0" y2="1.651" width="0.1524" layer="51" curve="-90"/>
+<wire x1="0" y1="-1.651" x2="1.651" y2="0" width="0.1524" layer="51" curve="90"/>
+<wire x1="-2.159" y1="0" x2="0" y2="2.159" width="0.1524" layer="51" curve="-90"/>
+<wire x1="0" y1="-2.159" x2="2.159" y2="0" width="0.1524" layer="51" curve="90"/>
+<circle x="0" y="0" radius="2.54" width="0.1524" layer="21"/>
+<pad name="A" x="-1.27" y="0" drill="0.8128" shape="octagon"/>
+<pad name="K" x="1.27" y="0" drill="0.8128" shape="octagon"/>
+<text x="3.175" y="0.5334" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="3.2004" y="-1.8034" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
+</package>
+</packages>
+<packages3d>
+<package3d name="LED5MM" urn="urn:adsk.eagle:package:15799/2" type="model" library_version="4">
+<description>LED
+5 mm, round</description>
+<packageinstances>
+<packageinstance name="LED5MM"/>
+</packageinstances>
+</package3d>
+</packages3d>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -1968,6 +2001,14 @@ design rules under a new name.</description>
 <attribute name="NAME" x="73.279" y="24.384" size="0.9906" layer="25" ratio="10"/>
 <attribute name="VALUE" x="76.2" y="19.05" size="0.9906" layer="27" ratio="10" rot="R270" align="center"/>
 </element>
+<element name="LED1" library="led" library_urn="urn:adsk.eagle:library:259" package="LED5MM" package3d_urn="urn:adsk.eagle:package:15799/2" value="" x="86.36" y="3.81" smashed="yes" rot="R90">
+<attribute name="NAME" x="85.8266" y="6.985" size="1.27" layer="25" ratio="10" rot="R90"/>
+<attribute name="VALUE" x="88.1634" y="7.0104" size="1.27" layer="27" ratio="10" rot="R90"/>
+</element>
+<element name="R9" library="mcp" library_urn="urn:adsk.eagle:library:9418757" package="0204/7" package3d_urn="urn:adsk.eagle:package:23498/2" value="330" x="77.47" y="8.89" smashed="yes">
+<attribute name="NAME" x="74.93" y="10.1854" size="0.9906" layer="25" ratio="10"/>
+<attribute name="VALUE" x="75.8444" y="8.4074" size="0.9906" layer="27" ratio="10"/>
+</element>
 </elements>
 <signals>
 <signal name="N$2">
@@ -2031,11 +2072,8 @@ design rules under a new name.</description>
 <wire x1="66.1416" y1="12.8016" x2="66.1416" y2="10.6172" width="0.508" layer="16"/>
 <wire x1="68.58" y1="15.24" x2="66.1416" y2="12.8016" width="0.508" layer="16"/>
 <wire x1="67.2846" y1="9.3218" x2="67.31" y2="9.271" width="0.508" layer="16"/>
-<wire x1="74.9046" y1="7.4676" x2="74.9046" y2="2.5908" width="0.508" layer="16"/>
-<wire x1="73.3806" y1="8.9916" x2="74.9046" y2="7.4676" width="0.508" layer="16"/>
-<wire x1="70.231" y1="8.9916" x2="73.3806" y2="8.9916" width="0.508" layer="16"/>
 <wire x1="74.9046" y1="2.5908" x2="74.93" y2="2.54" width="0.508" layer="16"/>
-<wire x1="70.231" y1="8.9916" x2="69.6722" y2="9.271" width="0.508" layer="16"/>
+<wire x1="69.6722" y1="9.271" x2="70.231" y2="8.9916" width="0.508" layer="16"/>
 <wire x1="67.31" y1="9.271" x2="69.6722" y2="9.271" width="0.508" layer="16"/>
 <wire x1="57.4548" y1="8.9916" x2="56.0832" y2="8.9916" width="0.508" layer="16"/>
 <wire x1="59.2074" y1="10.7442" x2="57.4548" y2="8.9916" width="0.508" layer="16"/>
@@ -2062,6 +2100,11 @@ design rules under a new name.</description>
 <wire x1="72.39" y1="17.78" x2="74.93" y2="20.32" width="0.508" layer="1"/>
 <wire x1="74.93" y1="20.32" x2="74.93" y2="23.0632" width="0.508" layer="1"/>
 <wire x1="74.93" y1="23.0632" x2="69.85" y2="28.1432" width="0.508" layer="1"/>
+<contactref element="R9" pad="1"/>
+<wire x1="73.5584" y1="8.9916" x2="73.66" y2="8.89" width="0.508" layer="16"/>
+<wire x1="70.231" y1="8.9916" x2="73.5584" y2="8.9916" width="0.508" layer="16"/>
+<wire x1="73.66" y1="8.89" x2="74.9046" y2="7.6454" width="0.508" layer="16"/>
+<wire x1="74.9046" y1="7.6454" x2="74.9046" y2="2.5908" width="0.508" layer="16"/>
 </signal>
 <signal name="N$3">
 <contactref element="D1" pad="A"/>
@@ -2211,8 +2254,11 @@ design rules under a new name.</description>
 <wire x1="81.28" y1="22.86" x2="80.01" y2="22.86" width="0.508" layer="1"/>
 <wire x1="80.01" y1="22.86" x2="75.7682" y2="27.1018" width="0.508" layer="1"/>
 <wire x1="75.7682" y1="27.1018" x2="75.7682" y2="35.56" width="0.508" layer="1"/>
-<wire x1="78.89" y1="2.54" x2="78.89" y2="7.77" width="0.508" layer="1"/>
-<wire x1="78.89" y1="7.77" x2="85.09" y2="13.97" width="0.508" layer="1"/>
+<wire x1="78.89" y1="2.54" x2="78.89" y2="9.04" width="0.508" layer="1"/>
+<wire x1="83.82" y1="13.97" x2="85.09" y2="13.97" width="0.508" layer="1"/>
+<wire x1="83.82" y1="13.97" x2="78.89" y2="9.04" width="0.508" layer="1"/>
+<contactref element="LED1" pad="A"/>
+<wire x1="86.36" y1="2.54" x2="78.89" y2="2.54" width="0.508" layer="1"/>
 </signal>
 <signal name="RELAY_IN">
 <contactref element="J7" pad="3"/>
@@ -2409,6 +2455,12 @@ design rules under a new name.</description>
 </signal>
 <signal name="N$16">
 <contactref element="K2" pad="3"/>
+</signal>
+<signal name="N$17">
+<contactref element="LED1" pad="K"/>
+<contactref element="R9" pad="2"/>
+<wire x1="81.28" y1="8.89" x2="82.55" y2="8.89" width="0.254" layer="1"/>
+<wire x1="82.55" y1="8.89" x2="86.36" y2="5.08" width="0.254" layer="1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>
