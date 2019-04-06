@@ -1,0 +1,7 @@
+# Eagle Backup files
+*.s#?
+*.b#?
+*.l#?
+*.b$?
+*.s$?
+*.l$?
