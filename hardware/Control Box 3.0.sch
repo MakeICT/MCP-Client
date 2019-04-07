@@ -204,7 +204,7 @@
 <wire x1="-3.175" y1="-14.23" x2="12.065" y2="-14.23" width="0.1" layer="21"/>
 <wire x1="12.065" y1="-14.23" x2="12.065" y2="-8.23" width="0.1" layer="21"/>
 </package>
-<package name="CST2010100LD" library_version="9" library_locally_modified="yes">
+<package name="CST2010100LD" urn="urn:adsk.eagle:footprint:10310765/1" library_version="11">
 <description>&lt;b&gt;CST2010-100LD&lt;/b&gt;&lt;br&gt;
 </description>
 <smd name="1" x="-8.845" y="5.08" dx="2.34" dy="1.19" layer="1"/>
@@ -268,7 +268,7 @@ type 0204, grid 7.5 mm</description>
 <rectangle x1="2.54" y1="-0.254" x2="2.921" y2="0.254" layer="21"/>
 <rectangle x1="-2.921" y1="-0.254" x2="-2.54" y2="0.254" layer="21"/>
 </package>
-<package name="HDRRA4W64P762_2X2_1016X254X556B" urn="urn:adsk.eagle:footprint:10227410/1" locally_modified="yes" library_version="9" library_locally_modified="yes">
+<package name="HDRRA4W64P762_2X2_1016X254X556B" urn="urn:adsk.eagle:footprint:10227410/2" library_version="11">
 <description>Double-row, 4-pin Pin Header (Male) Right Angle, 7.62 mm (0.30 in) pitch, 5.84 mm mating length, 10.16 X 2.54 X 5.56 mm body
 &lt;p&gt;Double-row (2X2), 4-pin Pin Header (Male) Right Angle package with 7.62 mm (0.30 in) pitch, 0.64 mm lead width, 3.00 mm tail length and 5.84 mm mating length with body size 10.16 X 2.54 X 5.56 mm, pin pattern - clockwise from top left&lt;/p&gt;</description>
 <circle x="-1.3565" y="0" radius="0.25" width="0" layer="21"/>
@@ -283,41 +283,75 @@ type 0204, grid 7.5 mm</description>
 <wire x1="11.43" y1="-26.67" x2="-3.81" y2="-26.67" width="0.1524" layer="21"/>
 <wire x1="-3.81" y1="-26.67" x2="-3.81" y2="2.54" width="0.1524" layer="21"/>
 </package>
-<package name="HDRV2W165P396_1X2_1016X508X838B" urn="urn:adsk.eagle:footprint:10227917/1" locally_modified="yes" library_version="9" library_locally_modified="yes">
+<package name="HDRV2W165P396_1X2_1016X508X838B" urn="urn:adsk.eagle:footprint:10227917/3" library_version="11">
 <description>Single-row, 2-pin Pin Header (Male) Straight, 3.96 mm (0.16 in) col pitch, 5.84 mm mating length, 10.16 X 5.08 X 8.38 mm body
 &lt;p&gt;Single-row (1X2), 2-pin Pin Header (Male) Straight package with 3.96 mm (0.16 in) col pitch, 1.65 mm lead width, 3.00 mm tail length and 5.84 mm mating length with overall size 10.16 X 5.08 X 8.38 mm, pin pattern - clockwise from top left&lt;/p&gt;</description>
-<circle x="0" y="3.044" radius="0.25" width="0" layer="21"/>
-<wire x1="7.06" y1="-2.54" x2="-3.1" y2="-2.54" width="0.12" layer="21"/>
-<wire x1="-3.1" y1="-2.54" x2="-3.1" y2="2.54" width="0.12" layer="21"/>
-<wire x1="-3.1" y1="2.54" x2="7.06" y2="2.54" width="0.12" layer="21"/>
-<wire x1="7.06" y1="2.54" x2="7.06" y2="-2.54" width="0.12" layer="21"/>
-<wire x1="7.06" y1="-2.54" x2="-3.1" y2="-2.54" width="0.12" layer="51"/>
-<wire x1="-3.1" y1="-2.54" x2="-3.1" y2="2.54" width="0.12" layer="51"/>
-<wire x1="-3.1" y1="2.54" x2="7.06" y2="2.54" width="0.12" layer="51"/>
-<wire x1="7.06" y1="2.54" x2="7.06" y2="-2.54" width="0.12" layer="51"/>
+<circle x="-1.3208" y="2.5868" radius="0.25" width="0" layer="21"/>
+<wire x1="5.8928" y1="-4.9022" x2="-1.8808" y2="-4.9022" width="0.127" layer="21"/>
+<wire x1="-1.8808" y1="-4.9022" x2="-1.8808" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="-1.8808" y1="2.0066" x2="-0.5842" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="-0.5842" y1="2.0066" x2="4.5212" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="5.8928" y1="1.99898125" x2="5.8928" y2="-4.9022" width="0.127" layer="51"/>
+<wire x1="-0.5842" y1="2.0066" x2="-0.5842" y2="3.302" width="0.127" layer="21"/>
+<wire x1="-0.5842" y1="3.302" x2="4.5212" y2="3.302" width="0.127" layer="21"/>
+<wire x1="4.5212" y1="3.302" x2="4.5212" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="4.5212" y1="2.0066" x2="5.8928" y2="2.0066" width="0.127" layer="21"/>
 <pad name="1" x="0" y="0" drill="1.648459375"/>
 <pad name="2" x="3.96" y="0" drill="1.648459375"/>
-<text x="0" y="3.929" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
-<text x="0" y="-3.175" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
+<text x="0.635" y="-6.469" size="1.27" layer="25" rot="R180" align="bottom-center">&gt;NAME</text>
+<text x="0.635" y="5.715" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="HDRV2W64P792_1X2_1016X508X838B" urn="urn:adsk.eagle:footprint:10227932/1" locally_modified="yes" library_version="9" library_locally_modified="yes">
+<package name="HDRV2W64P792_1X2_1016X508X838B" urn="urn:adsk.eagle:footprint:10227932/3" library_version="12">
 <description>Single-row, 2-pin Pin Header (Male) Straight, 7.92 mm (0.31 in) col pitch, 5.84 mm mating length, 10.16 X 5.08 X 8.38 mm body
 &lt;p&gt;Single-row (1X2), 2-pin Pin Header (Male) Straight package with 7.92 mm (0.31 in) col pitch, 0.64 mm lead width, 3.00 mm tail length and 5.84 mm mating length with overall size 10.16 X 5.08 X 8.38 mm, pin pattern - clockwise from top left&lt;/p&gt;</description>
-<circle x="0" y="3.044" radius="0.25" width="0" layer="21"/>
-<wire x1="10.31" y1="-2.54" x2="-2.39" y2="-2.54" width="0.12" layer="21"/>
-<wire x1="-2.39" y1="-2.54" x2="-2.39" y2="2.54" width="0.12" layer="21"/>
-<wire x1="-2.39" y1="2.54" x2="10.31" y2="2.54" width="0.12" layer="21"/>
-<wire x1="10.31" y1="2.54" x2="10.31" y2="-2.54" width="0.12" layer="21"/>
-<wire x1="10.31" y1="-2.54" x2="-2.39" y2="-2.54" width="0.12" layer="51"/>
-<wire x1="-2.39" y1="-2.54" x2="-2.39" y2="2.54" width="0.12" layer="51"/>
-<wire x1="-2.39" y1="2.54" x2="10.31" y2="2.54" width="0.12" layer="51"/>
-<wire x1="10.31" y1="2.54" x2="10.31" y2="-2.54" width="0.12" layer="51"/>
 <pad name="1" x="0" y="0" drill="1.648459375"/>
 <pad name="2" x="7.92" y="0" drill="1.648459375"/>
-<text x="0" y="3.929" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
-<text x="0" y="-3.175" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
+<circle x="-1.3208" y="2.5868" radius="0.25" width="0" layer="21"/>
+<wire x1="9.9314" y1="-4.9022" x2="-1.8796" y2="-4.9022" width="0.127" layer="21"/>
+<wire x1="-1.8796" y1="-4.9022" x2="-1.8796" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="-1.8796" y1="2.0066" x2="-0.5842" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="-0.5842" y1="2.0066" x2="8.5598" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="9.9314" y1="1.99898125" x2="9.9314" y2="-4.9022" width="0.127" layer="51"/>
+<wire x1="-0.5842" y1="2.0066" x2="-0.5842" y2="3.302" width="0.127" layer="21"/>
+<wire x1="-0.5842" y1="3.302" x2="8.5598" y2="3.302" width="0.127" layer="21"/>
+<wire x1="8.5598" y1="3.302" x2="8.5598" y2="2.0066" width="0.127" layer="21"/>
+<wire x1="8.5598" y1="2.0066" x2="9.9314" y2="2.0066" width="0.127" layer="21"/>
+<text x="0.635" y="-6.469" size="1.27" layer="25" rot="R180" align="bottom-center">&gt;NAME</text>
+<text x="0.635" y="5.715" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="T9AS5D1212313932103" library_version="9" library_locally_modified="yes">
+<package name="T9AS5D1212313932103-2" urn="urn:adsk.eagle:footprint:10310770/1" library_version="11">
+<description>&lt;b&gt;T9AS&lt;/b&gt;&lt;br&gt;
+</description>
+<pad name="1" x="4.525" y="-11.2" drill="1.17" diameter="1.755"/>
+<pad name="3" x="8.335" y="4.04" drill="2.19" diameter="3.285"/>
+<pad name="4" x="-9.445" y="1.5" drill="2.06" diameter="3.09"/>
+<pad name="2" x="-5.635" y="-11.2" drill="1.17" diameter="1.755"/>
+<text x="-6.35" y="7.62" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="-6.35" y="11.43" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<wire x1="-14.715" y1="15.2" x2="14.715" y2="15.2" width="0.1" layer="51"/>
+<wire x1="14.715" y1="15.2" x2="14.715" y2="-15.2" width="0.1" layer="51"/>
+<wire x1="14.715" y1="-15.2" x2="-14.715" y2="-15.2" width="0.1" layer="51"/>
+<wire x1="-14.715" y1="-15.2" x2="-14.715" y2="15.2" width="0.1" layer="51"/>
+<wire x1="-13.715" y1="14.2" x2="13.715" y2="14.2" width="0.2" layer="51"/>
+<wire x1="13.715" y1="14.2" x2="13.715" y2="1.5" width="0.2" layer="51"/>
+<wire x1="13.715" y1="1.5" x2="8.335" y2="1.5" width="0.2" layer="51"/>
+<wire x1="8.335" y1="1.5" x2="8.335" y2="-13.74" width="0.2" layer="51"/>
+<wire x1="8.335" y1="-13.74" x2="-9.445" y2="-13.74" width="0.2" layer="51"/>
+<wire x1="-9.445" y1="-13.74" x2="-9.445" y2="-3.58" width="0.2" layer="51"/>
+<wire x1="-9.445" y1="-3.58" x2="-13.715" y2="-3.58" width="0.2" layer="51"/>
+<wire x1="-13.715" y1="-3.58" x2="-13.715" y2="14.2" width="0.2" layer="51"/>
+<wire x1="-9.445" y1="-3.58" x2="-9.445" y2="-13.74" width="0.1" layer="21"/>
+<wire x1="-9.445" y1="-13.74" x2="8.335" y2="-13.74" width="0.1" layer="21"/>
+<wire x1="8.335" y1="-13.74" x2="8.335" y2="1.5" width="0.1" layer="21"/>
+<wire x1="8.335" y1="1.5" x2="13.715" y2="1.5" width="0.1" layer="21"/>
+<wire x1="13.715" y1="1.5" x2="13.715" y2="14.2" width="0.1" layer="21"/>
+<wire x1="13.715" y1="14.2" x2="-13.715" y2="14.2" width="0.1" layer="21"/>
+<wire x1="-13.715" y1="14.2" x2="-13.715" y2="-3.58" width="0.1" layer="21"/>
+<wire x1="-13.715" y1="-3.58" x2="-9.445" y2="-3.58" width="0.1" layer="21"/>
+<wire x1="4.415" y1="-14.1" x2="4.615" y2="-14.1" width="0.2" layer="21" curve="-180"/>
+<wire x1="4.615" y1="-14.1" x2="4.415" y2="-14.1" width="0.2" layer="21" curve="-180"/>
+</package>
+<package name="T9AS5D1212313932103" urn="urn:adsk.eagle:footprint:10310761/1" library_version="11">
 <description>&lt;b&gt;T9AS&lt;/b&gt;&lt;br&gt;
 </description>
 <pad name="1" x="4.525" y="-11.2" drill="1.17" diameter="1.755"/>
@@ -352,38 +386,6 @@ type 0204, grid 7.5 mm</description>
 <wire x1="4.615" y1="-14.1" x2="4.615" y2="-14.1" width="0.2" layer="21"/>
 <wire x1="4.615" y1="-14.1" x2="4.415" y2="-14.1" width="0.2" layer="21" curve="-180"/>
 </package>
-<package name="T9AS5D1212313932103-2" library_version="9" library_locally_modified="yes">
-<description>&lt;b&gt;T9AS&lt;/b&gt;&lt;br&gt;
-</description>
-<pad name="1" x="4.525" y="-11.2" drill="1.17" diameter="1.755"/>
-<pad name="3" x="8.335" y="4.04" drill="2.19" diameter="3.285"/>
-<pad name="4" x="-9.445" y="1.5" drill="2.06" diameter="3.09"/>
-<pad name="2" x="-5.635" y="-11.2" drill="1.17" diameter="1.755"/>
-<text x="-6.35" y="7.62" size="1.27" layer="25" align="center">&gt;NAME</text>
-<text x="-6.35" y="11.43" size="1.27" layer="27" align="center">&gt;VALUE</text>
-<wire x1="-14.715" y1="15.2" x2="14.715" y2="15.2" width="0.1" layer="51"/>
-<wire x1="14.715" y1="15.2" x2="14.715" y2="-15.2" width="0.1" layer="51"/>
-<wire x1="14.715" y1="-15.2" x2="-14.715" y2="-15.2" width="0.1" layer="51"/>
-<wire x1="-14.715" y1="-15.2" x2="-14.715" y2="15.2" width="0.1" layer="51"/>
-<wire x1="-13.715" y1="14.2" x2="13.715" y2="14.2" width="0.2" layer="51"/>
-<wire x1="13.715" y1="14.2" x2="13.715" y2="1.5" width="0.2" layer="51"/>
-<wire x1="13.715" y1="1.5" x2="8.335" y2="1.5" width="0.2" layer="51"/>
-<wire x1="8.335" y1="1.5" x2="8.335" y2="-13.74" width="0.2" layer="51"/>
-<wire x1="8.335" y1="-13.74" x2="-9.445" y2="-13.74" width="0.2" layer="51"/>
-<wire x1="-9.445" y1="-13.74" x2="-9.445" y2="-3.58" width="0.2" layer="51"/>
-<wire x1="-9.445" y1="-3.58" x2="-13.715" y2="-3.58" width="0.2" layer="51"/>
-<wire x1="-13.715" y1="-3.58" x2="-13.715" y2="14.2" width="0.2" layer="51"/>
-<wire x1="-9.445" y1="-3.58" x2="-9.445" y2="-13.74" width="0.1" layer="21"/>
-<wire x1="-9.445" y1="-13.74" x2="8.335" y2="-13.74" width="0.1" layer="21"/>
-<wire x1="8.335" y1="-13.74" x2="8.335" y2="1.5" width="0.1" layer="21"/>
-<wire x1="8.335" y1="1.5" x2="13.715" y2="1.5" width="0.1" layer="21"/>
-<wire x1="13.715" y1="1.5" x2="13.715" y2="14.2" width="0.1" layer="21"/>
-<wire x1="13.715" y1="14.2" x2="-13.715" y2="14.2" width="0.1" layer="21"/>
-<wire x1="-13.715" y1="14.2" x2="-13.715" y2="-3.58" width="0.1" layer="21"/>
-<wire x1="-13.715" y1="-3.58" x2="-9.445" y2="-3.58" width="0.1" layer="21"/>
-<wire x1="4.415" y1="-14.1" x2="4.615" y2="-14.1" width="0.2" layer="21" curve="-180"/>
-<wire x1="4.615" y1="-14.1" x2="4.415" y2="-14.1" width="0.2" layer="21" curve="-180"/>
-</package>
 </packages>
 <packages3d>
 <package3d name="54601908WPLF" urn="urn:adsk.eagle:package:9475118/2" type="box" library_version="9" library_locally_modified="yes">
@@ -406,25 +408,43 @@ type 0204, grid 7.5 mm</description>
 <packageinstance name="0204/7"/>
 </packageinstances>
 </package3d>
-<package3d name="HDRRA4W64P762_2X2_1016X254X556B" urn="urn:adsk.eagle:package:10227406/1" locally_modified="yes" type="model" library_version="9" library_locally_modified="yes">
+<package3d name="HDRRA4W64P762_2X2_1016X254X556B" urn="urn:adsk.eagle:package:10227406/2" type="model" library_version="11">
 <description>Double-row, 4-pin Pin Header (Male) Right Angle, 7.62 mm (0.30 in) pitch, 5.84 mm mating length, 10.16 X 2.54 X 5.56 mm body
 &lt;p&gt;Double-row (2X2), 4-pin Pin Header (Male) Right Angle package with 7.62 mm (0.30 in) pitch, 0.64 mm lead width, 3.00 mm tail length and 5.84 mm mating length with body size 10.16 X 2.54 X 5.56 mm, pin pattern - clockwise from top left&lt;/p&gt;</description>
 <packageinstances>
 <packageinstance name="HDRRA4W64P762_2X2_1016X254X556B"/>
 </packageinstances>
 </package3d>
-<package3d name="HDRV2W165P396_1X2_1016X508X838B" urn="urn:adsk.eagle:package:10227910/1" locally_modified="yes" type="model" library_version="9" library_locally_modified="yes">
+<package3d name="HDRV2W165P396_1X2_1016X508X838B" urn="urn:adsk.eagle:package:10227910/4" type="model" library_version="11">
 <description>Single-row, 2-pin Pin Header (Male) Straight, 3.96 mm (0.16 in) col pitch, 5.84 mm mating length, 10.16 X 5.08 X 8.38 mm body
 &lt;p&gt;Single-row (1X2), 2-pin Pin Header (Male) Straight package with 3.96 mm (0.16 in) col pitch, 1.65 mm lead width, 3.00 mm tail length and 5.84 mm mating length with overall size 10.16 X 5.08 X 8.38 mm, pin pattern - clockwise from top left&lt;/p&gt;</description>
 <packageinstances>
 <packageinstance name="HDRV2W165P396_1X2_1016X508X838B"/>
 </packageinstances>
 </package3d>
-<package3d name="HDRV2W64P792_1X2_1016X508X838B" urn="urn:adsk.eagle:package:10227928/1" locally_modified="yes" type="model" library_version="9" library_locally_modified="yes">
+<package3d name="HDRV2W64P792_1X2_1016X508X838B" urn="urn:adsk.eagle:package:10227928/3" type="model" library_version="12">
 <description>Single-row, 2-pin Pin Header (Male) Straight, 7.92 mm (0.31 in) col pitch, 5.84 mm mating length, 10.16 X 5.08 X 8.38 mm body
 &lt;p&gt;Single-row (1X2), 2-pin Pin Header (Male) Straight package with 7.92 mm (0.31 in) col pitch, 0.64 mm lead width, 3.00 mm tail length and 5.84 mm mating length with overall size 10.16 X 5.08 X 8.38 mm, pin pattern - clockwise from top left&lt;/p&gt;</description>
 <packageinstances>
 <packageinstance name="HDRV2W64P792_1X2_1016X508X838B"/>
+</packageinstances>
+</package3d>
+<package3d name="CST2010100LD" urn="urn:adsk.eagle:package:10310781/1" type="box" library_version="11">
+<description>&lt;b&gt;CST2010-100LD&lt;/b&gt;&lt;br&gt;</description>
+<packageinstances>
+<packageinstance name="CST2010100LD"/>
+</packageinstances>
+</package3d>
+<package3d name="T9AS5D1212313932103-2" urn="urn:adsk.eagle:package:10310780/1" type="box" library_version="11">
+<description>&lt;b&gt;T9AS&lt;/b&gt;&lt;br&gt;</description>
+<packageinstances>
+<packageinstance name="T9AS5D1212313932103-2"/>
+</packageinstances>
+</package3d>
+<package3d name="T9AS5D1212313932103" urn="urn:adsk.eagle:package:10310785/1" type="box" library_version="11">
+<description>&lt;b&gt;T9AS&lt;/b&gt;&lt;br&gt;</description>
+<packageinstances>
+<packageinstance name="T9AS5D1212313932103"/>
 </packageinstances>
 </package3d>
 </packages3d>
@@ -445,7 +465,7 @@ type 0204, grid 7.5 mm</description>
 <pin name="6" x="20.32" y="-5.08" length="middle" rot="R180"/>
 <pin name="8" x="20.32" y="-7.62" length="middle" rot="R180"/>
 </symbol>
-<symbol name="CST2010-100LD" library_version="9" library_locally_modified="yes">
+<symbol name="CST2010-100LD" urn="urn:adsk.eagle:symbol:10310754/1" library_version="11">
 <wire x1="5.08" y1="2.54" x2="17.78" y2="2.54" width="0.254" layer="94"/>
 <wire x1="17.78" y1="-15.24" x2="17.78" y2="2.54" width="0.254" layer="94"/>
 <wire x1="17.78" y1="-15.24" x2="5.08" y2="-15.24" width="0.254" layer="94"/>
@@ -490,7 +510,7 @@ type 0204, grid 7.5 mm</description>
 <pin name="1" x="-2.54" y="2.54" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="2" x="-2.54" y="0" visible="pad" length="short" direction="pas" function="dot"/>
 </symbol>
-<symbol name="T9AS1D22-5-2" library_version="9" library_locally_modified="yes">
+<symbol name="T9AS1D22-5-2" urn="urn:adsk.eagle:symbol:10310739/1" library_version="11">
 <wire x1="5.08" y1="0" x2="25.4" y2="0" width="0.254" layer="94"/>
 <wire x1="25.4" y1="-7.62" x2="25.4" y2="0" width="0.254" layer="94"/>
 <wire x1="25.4" y1="-7.62" x2="5.08" y2="-7.62" width="0.254" layer="94"/>
@@ -556,7 +576,7 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 </device>
 </devices>
 </deviceset>
-<deviceset name="CST2010-100LD" prefix="T" library_version="9" library_locally_modified="yes">
+<deviceset name="CST2010-100LD" urn="urn:adsk.eagle:component:10310830/1" prefix="T" library_version="11">
 <description>&lt;b&gt;Current Transformers 40A 8.5mH 2.5 Ohms AEC-Q200&lt;/b&gt;&lt;p&gt;
 Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD.pdf"&gt; Datasheet &lt;/a&gt;</description>
 <gates>
@@ -578,6 +598,9 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 <connect gate="G$1" pin="8" pad="8"/>
 <connect gate="G$1" pin="9" pad="9"/>
 </connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:10310781/1"/>
+</package3dinstances>
 <technologies>
 <technology name="">
 <attribute name="DESCRIPTION" value="Current Transformers 40A 8.5mH 2.5 Ohms AEC-Q200" constant="no"/>
@@ -610,7 +633,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 </device>
 </devices>
 </deviceset>
-<deviceset name="VC0200500000G" library_version="9" library_locally_modified="yes">
+<deviceset name="VC0200500000G" urn="urn:adsk.eagle:component:10310821/1" library_version="11">
 <gates>
 <gate name="G$1" symbol="PINHD2" x="2.54" y="0"/>
 </gates>
@@ -621,7 +644,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 <connect gate="G$1" pin="2" pad="2 3"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:10227406/1"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:10227406/2"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -629,7 +652,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 </device>
 </devices>
 </deviceset>
-<deviceset name="VH_1X2" library_version="9" library_locally_modified="yes">
+<deviceset name="VH_1X2" urn="urn:adsk.eagle:component:10310816/3" library_version="12">
 <gates>
 <gate name="G$1" symbol="PINHD2" x="2.54" y="0"/>
 </gates>
@@ -640,7 +663,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:10227910/1"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:10227910/4"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -652,7 +675,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:10227928/1"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:10227928/3"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -660,7 +683,7 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/CST2010-100LD
 </device>
 </devices>
 </deviceset>
-<deviceset name="T9AS1D22-5" prefix="K" library_version="9" library_locally_modified="yes">
+<deviceset name="T9AS1D22-5" urn="urn:adsk.eagle:component:10310835/1" prefix="K" library_version="11">
 <description>&lt;b&gt;PWR PCB RELAYS&lt;/b&gt;&lt;p&gt;
 Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/T9AS1D22-5.pdf"&gt; Datasheet &lt;/a&gt;</description>
 <gates>
@@ -668,6 +691,9 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/T9AS1D22-5.pd
 </gates>
 <devices>
 <device name="" package="T9AS5D1212313932103">
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:10310785/1"/>
+</package3dinstances>
 <technologies>
 <technology name="">
 <attribute name="DESCRIPTION" value="PWR PCB RELAYS" constant="no"/>
@@ -686,6 +712,9 @@ Source: &lt;a href="https://componentsearchengine.com/Datasheets/1/T9AS1D22-5.pd
 <connect gate="G$1" pin="COM" pad="3"/>
 <connect gate="G$1" pin="NO" pad="4"/>
 </connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:10310780/1"/>
+</package3dinstances>
 <technologies>
 <technology name=""/>
 </technologies>
@@ -12766,7 +12795,7 @@ Source: www.kingbright.com</description>
 </classes>
 <parts>
 <part name="J7" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="54601-908WPLF" device="W/MODEL" package3d_urn="urn:adsk.eagle:package:9475071/4"/>
-<part name="T1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="CST2010-100LD" device=""/>
+<part name="T1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="CST2010-100LD" device="" package3d_urn="urn:adsk.eagle:package:10310781/1"/>
 <part name="R1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="R-US" device="" package3d_urn="urn:adsk.eagle:package:23498/2" value="2"/>
 <part name="D1" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="1N4148" device="DO35-7" package3d_urn="urn:adsk.eagle:package:43339/2" value="1N4148"/>
 <part name="R3" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="R-US" device="" package3d_urn="urn:adsk.eagle:package:23498/2" value="1k"/>
@@ -12776,10 +12805,10 @@ Source: www.kingbright.com</description>
 <part name="R6" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="R-US" device="" package3d_urn="urn:adsk.eagle:package:23498/2" value="???"/>
 <part name="C1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="CPOL-US" device="E1.8-4" package3d_urn="urn:adsk.eagle:package:23336/2" value="???"/>
 <part name="D2" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="1N4148" device="DO35-7" package3d_urn="urn:adsk.eagle:package:43339/2" value="1N4148"/>
-<part name="J1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/1" value="AC_IN"/>
-<part name="J5" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VH_1X2" device="GAP" package3d_urn="urn:adsk.eagle:package:10227928/1" value="To_Reg"/>
-<part name="J6" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VH_1X2" device="" package3d_urn="urn:adsk.eagle:package:10227910/1" value="From_Reg"/>
-<part name="J3" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/1" value="From_Relay"/>
+<part name="J1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/2" value="AC_IN"/>
+<part name="J5" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VH_1X2" device="GAP" package3d_urn="urn:adsk.eagle:package:10227928/3" value="To_Reg"/>
+<part name="J6" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VH_1X2" device="" package3d_urn="urn:adsk.eagle:package:10227910/4" value="From_Reg"/>
+<part name="J3" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/2" value="From_Relay"/>
 <part name="+5V1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
 <part name="GND1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
@@ -12790,10 +12819,10 @@ Source: www.kingbright.com</description>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="+5V3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
 <part name="+5V4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
-<part name="K1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="T9AS1D22-5" device="4PIN"/>
-<part name="K2" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="T9AS1D22-5" device="4PIN"/>
-<part name="J2" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/1" value="To_Relay"/>
-<part name="J4" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/1" value="AC_OUT"/>
+<part name="K1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="T9AS1D22-5" device="4PIN" package3d_urn="urn:adsk.eagle:package:10310780/1"/>
+<part name="K2" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="T9AS1D22-5" device="4PIN" package3d_urn="urn:adsk.eagle:package:10310780/1"/>
+<part name="J2" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/2" value="To_Relay"/>
+<part name="J4" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="VC0200500000G" device="VC0200500000G" package3d_urn="urn:adsk.eagle:package:10227406/2" value="AC_OUT"/>
 <part name="Q1" library="transistor" library_urn="urn:adsk.eagle:library:402" deviceset="2N3904" device="" package3d_urn="urn:adsk.eagle:package:28523/2"/>
 <part name="Q2" library="transistor" library_urn="urn:adsk.eagle:library:402" deviceset="2N3904" device="" package3d_urn="urn:adsk.eagle:package:28523/2"/>
 <part name="GND6" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
@@ -12888,11 +12917,11 @@ Source: www.kingbright.com</description>
 <attribute name="NAME" x="8.89" y="20.955" size="1.778" layer="95"/>
 <attribute name="VALUE" x="8.89" y="10.16" size="1.778" layer="96"/>
 </instance>
-<instance part="+5V1" gate="1" x="58.42" y="53.34" smashed="yes" rot="R90">
-<attribute name="VALUE" x="63.5" y="50.8" size="1.778" layer="96" rot="R180"/>
+<instance part="+5V1" gate="1" x="60.96" y="58.42" smashed="yes">
+<attribute name="VALUE" x="66.04" y="60.96" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="GND1" gate="1" x="66.04" y="55.88" smashed="yes" rot="R270">
-<attribute name="VALUE" x="63.5" y="58.42" size="1.778" layer="96" rot="R270"/>
+<instance part="GND1" gate="1" x="60.96" y="50.8" smashed="yes">
+<attribute name="VALUE" x="60.96" y="48.26" size="1.778" layer="96"/>
 </instance>
 <instance part="GND2" gate="1" x="30.48" y="91.44" smashed="yes">
 <attribute name="VALUE" x="27.94" y="88.9" size="1.778" layer="96"/>
@@ -12994,11 +13023,6 @@ Source: www.kingbright.com</description>
 <nets>
 <net name="GND" class="2">
 <segment>
-<pinref part="GND1" gate="1" pin="GND"/>
-<pinref part="J6" gate="G$1" pin="1"/>
-<wire x1="68.58" y1="55.88" x2="73.66" y2="55.88" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <wire x1="30.48" y1="101.6" x2="30.48" y2="93.98" width="0.1524" layer="91"/>
 <pinref part="GND2" gate="1" pin="GND"/>
 <pinref part="IC1" gate="P" pin="V-"/>
@@ -13056,6 +13080,11 @@ Source: www.kingbright.com</description>
 <pinref part="R9" gate="G$1" pin="1"/>
 <pinref part="GND7" gate="1" pin="GND"/>
 <wire x1="86.36" y1="106.68" x2="88.9" y2="106.68" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="GND1" gate="1" pin="GND"/>
+<pinref part="J6" gate="G$1" pin="2"/>
+<wire x1="60.96" y1="53.34" x2="73.66" y2="53.34" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -13130,11 +13159,6 @@ Source: www.kingbright.com</description>
 </net>
 <net name="+5V" class="2">
 <segment>
-<pinref part="+5V1" gate="1" pin="+5V"/>
-<pinref part="J6" gate="G$1" pin="2"/>
-<wire x1="60.96" y1="53.34" x2="73.66" y2="53.34" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <wire x1="30.48" y1="116.84" x2="30.48" y2="121.92" width="0.1524" layer="91"/>
 <pinref part="+5V2" gate="1" pin="+5V"/>
 <pinref part="IC1" gate="P" pin="V+"/>
@@ -13166,6 +13190,11 @@ Source: www.kingbright.com</description>
 <pinref part="+5V6" gate="1" pin="+5V"/>
 <pinref part="LED1" gate="G$1" pin="A"/>
 <wire x1="60.96" y1="106.68" x2="66.04" y2="106.68" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="+5V1" gate="1" pin="+5V"/>
+<pinref part="J6" gate="G$1" pin="1"/>
+<wire x1="60.96" y1="55.88" x2="73.66" y2="55.88" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="RELAY_IN" class="0">
