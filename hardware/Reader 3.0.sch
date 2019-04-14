@@ -3222,9 +3222,9 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 <part name="GND4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="+3V1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
 <part name="+3V2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
-<part name="GRN" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="5MM" package3d_urn="urn:adsk.eagle:package:15799/2"/>
-<part name="YEL" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="5MM" package3d_urn="urn:adsk.eagle:package:15799/2"/>
 <part name="RED" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="5MM" package3d_urn="urn:adsk.eagle:package:15799/2"/>
+<part name="YEL" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="5MM" package3d_urn="urn:adsk.eagle:package:15799/2"/>
+<part name="GRN" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="5MM" package3d_urn="urn:adsk.eagle:package:15799/2"/>
 <part name="R1" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="R-US" device="" package3d_urn="urn:adsk.eagle:package:23498/2" value="330"/>
 <part name="R2" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="R-US" device="" package3d_urn="urn:adsk.eagle:package:23498/2" value="330"/>
 <part name="R3" library="mcp" library_urn="urn:adsk.eagle:library:9418757" deviceset="R-US" device="" package3d_urn="urn:adsk.eagle:package:23498/2" value="330"/>
@@ -3277,7 +3277,7 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 <instance part="+3V2" gate="G$1" x="127" y="20.32" smashed="yes" rot="R90">
 <attribute name="VALUE" x="127" y="17.78" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="GRN" gate="G$1" x="93.98" y="45.72" smashed="yes" rot="R90">
+<instance part="RED" gate="G$1" x="93.98" y="45.72" smashed="yes" rot="R90">
 <attribute name="NAME" x="93.472" y="49.276" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="98.552" y="51.435" size="1.778" layer="96" rot="R180"/>
 </instance>
@@ -3285,7 +3285,7 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 <attribute name="NAME" x="93.472" y="54.356" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="98.552" y="56.515" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="RED" gate="G$1" x="93.98" y="55.88" smashed="yes" rot="R90">
+<instance part="GRN" gate="G$1" x="93.98" y="55.88" smashed="yes" rot="R90">
 <attribute name="NAME" x="93.472" y="59.436" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="98.552" y="61.595" size="1.778" layer="96" rot="R180"/>
 </instance>
@@ -3508,7 +3508,7 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 <net name="N$1" class="0">
 <segment>
 <pinref part="U1" gate="G$1" pin="IO17"/>
-<pinref part="GRN" gate="G$1" pin="A"/>
+<pinref part="RED" gate="G$1" pin="A"/>
 <wire x1="91.44" y1="45.72" x2="83.82" y2="40.64" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -3522,13 +3522,13 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 <net name="N$3" class="0">
 <segment>
 <pinref part="U1" gate="G$1" pin="IO19"/>
-<pinref part="RED" gate="G$1" pin="A"/>
+<pinref part="GRN" gate="G$1" pin="A"/>
 <wire x1="91.44" y1="55.88" x2="83.82" y2="48.26" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$4" class="0">
 <segment>
-<pinref part="RED" gate="G$1" pin="C"/>
+<pinref part="GRN" gate="G$1" pin="C"/>
 <pinref part="R1" gate="G$1" pin="1"/>
 </segment>
 </net>
@@ -3540,7 +3540,7 @@ Source: &lt;a href="https://www.mouser.ch/datasheet/2/18/c-bmj-0051-1365214.pdf"
 </net>
 <net name="N$6" class="0">
 <segment>
-<pinref part="GRN" gate="G$1" pin="C"/>
+<pinref part="RED" gate="G$1" pin="C"/>
 <pinref part="R3" gate="G$1" pin="1"/>
 </segment>
 </net>
