@@ -32,6 +32,8 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "esp_task_wdt.h"
+#include <driver/adc.h>
+#include <esp_timer.h>
 
 #include "esp_log.h"
 
@@ -90,6 +92,8 @@ extern "C" {
 
 // esp_log_level_set("HTTP_CLIENT", ESP_LOG_DEBUG); 
 int state;
+long long int power_on_time;
+long long int current_detected_time;
 
 Reader card_reader;
 Light red_light((gpio_num_t)17);
@@ -142,6 +146,14 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         break;
     }
     return ESP_OK;
+}
+
+int check_current() {
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten(ADC1_CHANNEL_7,ADC_ATTEN_DB_0);
+    int val = adc1_get_raw(ADC1_CHANNEL_7);
+    // printf("%d\n", val);
+    return val;
 }
 
 static void initialise_wifi(void)
@@ -280,12 +292,18 @@ void app_main()
     yellow_light.off();
     green_light.off();
     while(1) {
+      // printf("%llu\n", esp_timer_get_time());
+
+      if(check_current() > 50) {
+        current_detected_time = esp_timer_get_time();
+      }
+
       if (!power_switch.state() && !state){
         yellow_light.off();
         green_light.off();
         red_light.off();
       }
-      if (!power_switch.state() && state) {
+      if ((!power_switch.state() || (esp_timer_get_time() - current_detected_time > 5000000)) && state) {
         machine_power.off();
         state = 0;
         yellow_light.off();
@@ -309,6 +327,8 @@ void app_main()
             yellow_light.off();
             green_light.on();
             machine_power.on();
+            power_on_time = esp_timer_get_time();
+            current_detected_time = esp_timer_get_time();
             // post_log(CLIENT_TAG, userID, nfc_id, "unlock");
 
             //vTaskDelay(2000 / portTICK_PERIOD_MS);
