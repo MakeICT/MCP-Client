@@ -1,5 +1,11 @@
 menu "MCP Client Configuration"
 
+config CLIENT_TAG
+    string "Client Tag"
+    default "99+Test+Client+-+"
+    help
+        Unique descriptive identifier for this client.
+
 config WIFI_SSID
     string "WiFi SSID"
 	default "myssid"
@@ -38,6 +44,11 @@ config PASSWORD
 	help
 		Password of MCP user.
 
+config CURRENT_TIMEOUT
+    int "Current Sensor Timeout"
+    default 5
+    help
+        Number of seconds before client deactivates due to current below threshold.
 
 
 endmenu

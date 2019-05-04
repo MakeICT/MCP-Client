@@ -55,15 +55,17 @@
    'make menuconfig'.
 
    If you'd rather not, just change the below entries to strings with
-   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
+   the config you want - ie #define WIFI_SSID "mywifissid"
 */
-#define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
-#define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
+#define WIFI_SSID CONFIG_WIFI_SSID
+#define WIFI_PASS CONFIG_WIFI_PASSWORD
 
 #define SERVER CONFIG_SERVER
 #define PORT CONFIG_PORT
 
-#define CLIENT_TAG "06+Luigi+Laser+-+"
+#define CLIENT_TAG CONFIG_CLIENT_TAG
+
+#define CURRENT_TIMEOUT CONFIG_CURRENT_TIMEOUT * 1000000
 
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
@@ -166,8 +168,8 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
 
     wifi_config_t wifi_config = {};
-    strcpy((char*) wifi_config.sta.ssid, (char*) CONFIG_WIFI_SSID);
-    strcpy((char*) wifi_config.sta.password, (char*) CONFIG_WIFI_PASSWORD);
+    strcpy((char*) wifi_config.sta.ssid, (char*) WIFI_SSID);
+    strcpy((char*) wifi_config.sta.password, (char*) WIFI_PASS);
 
     ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
@@ -303,7 +305,7 @@ void app_main()
         green_light.off();
         red_light.off();
       }
-      if ((!power_switch.state() || (esp_timer_get_time() - current_detected_time > 5000000)) && state) {
+      if ((!power_switch.state() || (esp_timer_get_time() - current_detected_time > CURRENT_TIMEOUT)) && state) {
         machine_power.off();
         state = 0;
         yellow_light.off();
