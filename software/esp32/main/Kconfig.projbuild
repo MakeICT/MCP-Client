@@ -1,4 +1,10 @@
-menu "Example Configuration"
+menu "MCP Client Configuration"
+
+config CLIENT_TAG
+    string "Client Tag"
+    default "99+Test+Client+-+"
+    help
+        Unique descriptive identifier for this client.
 
 config WIFI_SSID
     string "WiFi SSID"
@@ -38,6 +44,17 @@ config PASSWORD
 	help
 		Password of MCP user.
 
+config GROUP_ID
+    string "MCP Group Id"
+    default "0000"
+    help
+        ID of the MCP group to check.
+
+config CURRENT_TIMEOUT
+    int "Current Sensor Timeout"
+    default 5
+    help
+        Number of seconds before client deactivates due to current below threshold.
 
 
 endmenu

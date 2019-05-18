@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := https-request
+PROJECT_NAME := mcp-client
 
 include $(IDF_PATH)/make/project.mk
 

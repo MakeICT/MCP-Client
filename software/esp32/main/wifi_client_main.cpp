@@ -32,6 +32,8 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "esp_task_wdt.h"
+#include <driver/adc.h>
+#include <esp_timer.h>
 
 #include "esp_log.h"
 
@@ -56,15 +58,17 @@
    'make menuconfig'.
 
    If you'd rather not, just change the below entries to strings with
-   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
+   the config you want - ie #define WIFI_SSID "mywifissid"
 */
-#define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
-#define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
+#define WIFI_SSID CONFIG_WIFI_SSID
+#define WIFI_PASS CONFIG_WIFI_PASSWORD
 
 #define SERVER CONFIG_SERVER
 #define PORT CONFIG_PORT
 
-#define CLIENT_TAG "06+Luigi+Laser+-+"
+#define CLIENT_TAG CONFIG_CLIENT_TAG
+
+#define CURRENT_TIMEOUT CONFIG_CURRENT_TIMEOUT * 1000000
 
 
 // #define LED_RMT_TX_GPIO 23
@@ -100,11 +104,13 @@ extern "C" {
 
 // esp_log_level_set("HTTP_CLIENT", ESP_LOG_DEBUG); 
 int state;
+long long int power_on_time;
+long long int current_detected_time;
 
 Reader card_reader;
-Light red_light((gpio_num_t)19);
+Light red_light((gpio_num_t)17);
 Light yellow_light((gpio_num_t)18);
-Light green_light((gpio_num_t)17);
+Light green_light((gpio_num_t)19);
 Light machine_power((gpio_num_t)33);
 Switch power_switch((gpio_num_t)32);
 
@@ -161,6 +167,14 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
+int check_current() {
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten(ADC1_CHANNEL_7,ADC_ATTEN_DB_0);
+    int val = adc1_get_raw(ADC1_CHANNEL_7);
+    // printf("%d\n", val);
+    return val;
+}
+
 static void initialise_wifi(void)
 {
     tcpip_adapter_init();
@@ -171,8 +185,8 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
 
     wifi_config_t wifi_config = {};
-    strcpy((char*) wifi_config.sta.ssid, (char*) CONFIG_WIFI_SSID);
-    strcpy((char*) wifi_config.sta.password, (char*) CONFIG_WIFI_PASSWORD);
+    strcpy((char*) wifi_config.sta.ssid, (char*) WIFI_SSID);
+    strcpy((char*) wifi_config.sta.password, (char*) WIFI_PASS);
 
     ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
@@ -257,7 +271,7 @@ bool check_card(char* nfc_id) {
   get_json_token(data, tokens, num_t, "userID", userID);
 
   if(atoi(userID) > 0) {
-    int resp_len = check_group_enrollment(userID, "1348");
+    int resp_len = check_group_enrollment(userID, CONFIG_GROUP_ID);
 
     if (resp_len < 3) {
       post_log(CLIENT_TAG "User+Not+Authorized",userID, nfc_id,"deny");
@@ -297,12 +311,18 @@ void app_main()
     yellow_light.off();
     green_light.off();
     while(1) {
+      // printf("%llu\n", esp_timer_get_time());
+
+      if(check_current() > 50) {
+        current_detected_time = esp_timer_get_time();
+      }
+
       if (!power_switch.state() && !state){
         yellow_light.off();
         green_light.off();
         red_light.off();
       }
-      if (!power_switch.state() && state) {
+      if ((!power_switch.state() || (esp_timer_get_time() - current_detected_time > CURRENT_TIMEOUT)) && state) {
         machine_power.off();
         state = 0;
         yellow_light.off();
@@ -326,6 +346,8 @@ void app_main()
             yellow_light.off();
             green_light.on();
             machine_power.on();
+            power_on_time = esp_timer_get_time();
+            current_detected_time = esp_timer_get_time();
             // post_log(CLIENT_TAG, userID, nfc_id, "unlock");
 
             //vTaskDelay(2000 / portTICK_PERIOD_MS);
