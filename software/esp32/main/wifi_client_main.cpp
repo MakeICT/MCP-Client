@@ -254,7 +254,7 @@ bool check_card(char* nfc_id) {
   get_json_token(data, tokens, num_t, "userID", userID);
 
   if(atoi(userID) > 0) {
-    int resp_len = check_group_enrollment(userID, "1348");
+    int resp_len = check_group_enrollment(userID, CONFIG_GROUP_ID);
 
     if (resp_len < 3) {
       post_log(CLIENT_TAG "User+Not+Authorized",userID, nfc_id,"deny");
