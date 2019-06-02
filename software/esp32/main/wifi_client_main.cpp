@@ -44,7 +44,7 @@
 #include "lwip/dns.h"
 
 #include <jsmn.h>
-#define NUM_LEDS 1
+#define NUM_LEDS 8
 #include <ws2812_control.h>
 
 
@@ -73,8 +73,8 @@
 
 // #define LED_RMT_TX_GPIO 23
 
-#define RED   0xFF0000
-#define GREEN 0x00FF00
+#define RED   0x00FF00
+#define GREEN 0xFF0000
 #define BLUE  0x0000FF
 
 
@@ -109,7 +109,7 @@ long long int current_detected_time;
 
 Reader card_reader;
 Light red_light((gpio_num_t)17);
-Light yellow_light((gpio_num_t)18);
+Light yellow_light((gpio_num_t)23);
 Light green_light((gpio_num_t)19);
 Light machine_power((gpio_num_t)33);
 Switch power_switch((gpio_num_t)32);
@@ -141,7 +141,9 @@ void init(void)
   ws2812_control_init();
 
   struct led_state new_state;
-  new_state.leds[0] = RED;
+  for(int i=0; i<NUM_LEDS; i++) {
+    new_state.leds[i] = BLUE;
+  }
 
   ws2812_write_leds(new_state);
 }
