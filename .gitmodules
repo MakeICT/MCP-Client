@@ -1,3 +1,9 @@
 [submodule "software/esp32/components/ESP32-NeoPixel-WS2812-RMT"]
 	path = software/esp32/components/ESP32-NeoPixel-WS2812-RMT
 	url = https://github.com/JSchaenzle/ESP32-NeoPixel-WS2812-RMT.git
+[submodule "software/esp32/components/ESP32_LED_STRIP"]
+	path = software/esp32/components/ESP32_LED_STRIP
+	url = git@github.com:Lucas-Bruder/ESP32_LED_STRIP.git
+[submodule "software/esp32/components/ESP32_TFT_library"]
+	path = software/esp32/components/ESP32_TFT_library
+	url = git@github.com:loboris/ESP32_TFT_library.git
