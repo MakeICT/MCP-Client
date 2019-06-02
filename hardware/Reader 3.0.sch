@@ -7614,7 +7614,7 @@ Source: AVX .. aphvc.pdf</description>
 <attribute name="VALUE" x="12.7" y="40.64" size="1.778" layer="96"/>
 </instance>
 <instance part="C1" gate="G$1" x="20.32" y="53.34" smashed="yes" rot="R270">
-<attribute name="NAME" x="20.955" y="52.324" size="1.778" layer="95" rot="R270"/>
+<attribute name="NAME" x="23.495" y="52.324" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="16.129" y="52.324" size="1.778" layer="96" rot="R270"/>
 </instance>
 </instances>
