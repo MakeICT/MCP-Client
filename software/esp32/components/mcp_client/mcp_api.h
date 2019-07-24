@@ -18,6 +18,7 @@ static const char *MCP_API_TAG = "mcp_api";
 
 extern const char server_root_cert_pem[] asm("_binary_server_root_cert_pem_start");
 
+bool authenticated = false;
 char auth_cookie[77];
 esp_http_client_handle_t client;
 
@@ -65,6 +66,7 @@ void client_init() {
     config.cert_pem = server_root_cert_pem;
     config.url = WEB_URL;
     config.buffer_size = 2048;
+    config.timeout_ms = 1000;
 
 
     client = esp_http_client_init(&config);
@@ -92,7 +94,9 @@ int execute_request(char* api_url, char* api_request_object, esp_http_client_met
     esp_http_client_set_method(client, method);
     esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
     esp_http_client_set_header(client, "Host", WEB_SERVER);
-    esp_http_client_set_header(client, "Cookie", auth_cookie);
+    if(authenticated){ 
+        esp_http_client_set_header(client, "Cookie", auth_cookie);
+    }
 
 
 
@@ -110,6 +114,9 @@ int execute_request(char* api_url, char* api_request_object, esp_http_client_met
         else {
             return 0;
         }
+    }
+    else {
+        ESP_LOGI(MCP_API_TAG, "Error Code: %d", err);
     }
     return -1;
 }
@@ -138,7 +145,23 @@ static void authenticate_with_contact_credentials()
 {
     execute_request("/api/login?email=" CONFIG_USERNAME "&password=" CONFIG_PASSWORD, "test", HTTP_METHOD_POST);
     ESP_LOGI(MCP_API_TAG, "Auth Cookie: %s", auth_cookie);
+    authenticated = true;
     // cleanup();
+}
+
+int api_call(char* api_url, char* api_request_object, esp_http_client_method_t method) {
+    //if not authenticated, authenticate
+    int result = -1;
+    while (result == -1) {
+        result = execute_request(api_url, api_request_object, method);
+        if (result == -1) {
+            authenticated = false;
+            cleanup();
+            client_init();
+            authenticate_with_contact_credentials();
+        }
+    }
+    return result; 
 }
 
 static void get_users()
@@ -155,7 +178,7 @@ int get_user_by_NFC(char* nfcID)
     // ESP_LOGI(MCP_API_TAG, "%s",url);
     strcat(url, nfcID);
     // ESP_LOGI(MCP_API_TAG, "%s",url);
-    return execute_request(url,"", HTTP_METHOD_GET);
+    return api_call(url,"", HTTP_METHOD_GET);
 }
 
 int get_user_groups(char* userID)

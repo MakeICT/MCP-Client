@@ -506,6 +506,8 @@ const char* GeneralUtils::wifiErrorToString(uint8_t errCode) {
 		return "WIFI_REASON_ASSOC_FAIL";
 	case WIFI_REASON_HANDSHAKE_TIMEOUT:
 		return "WIFI_REASON_HANDSHAKE_TIMEOUT";
+	case WIFI_REASON_CONNECTION_FAIL:
+		return "WIFI_REASON_CONNECTION_FAIL";
 	}
 	return "Unknown ESP_ERR error";
 } // wifiErrorToString

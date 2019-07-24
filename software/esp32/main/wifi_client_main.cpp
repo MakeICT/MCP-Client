@@ -92,7 +92,6 @@ extern "C" {
   void app_main();
 }
 
-// esp_log_level_set("HTTP_CLIENT", ESP_LOG_DEBUG); 
 int state;
 long long int power_on_time;
 long long int current_detected_time;
