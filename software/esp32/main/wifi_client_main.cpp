@@ -99,6 +99,7 @@ Light red_light((gpio_num_t)17);
 Light yellow_light((gpio_num_t)18);
 Light green_light((gpio_num_t)19);
 Light machine_power((gpio_num_t)33);
+Light disarm_alarm((gpio_num_t)25);
 Switch power_switch((gpio_num_t)32);
 
 // static const char *REQUEST = "POST " AUTH_ENDPOINT "?email=" CONFIG_USERNAME    "&password=" CONFIG_PASSWORD "\r\n"
@@ -210,6 +211,7 @@ void app_main()
       }
       if ((!power_switch.state() || (esp_timer_get_time() - current_detected_time > CURRENT_TIMEOUT)) && state) {
         machine_power.off();
+        disarm_alarm.off();
         state = 0;
         yellow_light.off();
         green_light.off();
@@ -229,8 +231,10 @@ void app_main()
           yellow_light.on();
           if (check_card(uid_string)) {
             state = 1;
+            disarm_alarm.on();
             yellow_light.off();
             green_light.on();
+            vTaskDelay(500 / portTICK_PERIOD_MS);
             machine_power.on();
             power_on_time = esp_timer_get_time();
             current_detected_time = esp_timer_get_time();
