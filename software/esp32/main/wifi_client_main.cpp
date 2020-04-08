@@ -43,10 +43,8 @@
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 
-#include <jsmn.h>
-
 // #include "utils.h"
-#include "mcp_api.h"
+#include "mcp_api_new.h"
 #include <reader.h>
 #include <light.h>
 #include <switch.h>
@@ -174,65 +172,6 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
-}
-
-int parse_json(char* json_string, jsmntok_t* token_array) {
-  jsmn_parser parser;
-  jsmn_init(&parser);
-
-  int num_t = jsmn_parse(&parser, json_string, strlen(json_string), NULL, 0);
-  printf("num tokens: %d\n", num_t);
-
-  if (num_t < 0) {
-    printf("No tokens found\n");
-    return NULL;
-  }
-
-  if (token_array != NULL) {
-    jsmn_init(&parser);
-    // jsmntok_t t[num_t];
-    num_t = jsmn_parse(&parser, json_string, strlen(json_string), token_array, num_t);
-  }
-  else if (num_t < 1) {
-        printf("Object expected\n");
-        return NULL;
-  }
-
-  return num_t;
-} 
-
-int get_json_token(char* json_string, jsmntok_t* token_array, int num_t, char* token_name, char* buffer) {
-  for (int i = 2; i < num_t; i++){
-    jsmntok_t json_value = token_array[i+1];
-    jsmntok_t json_key = token_array[i];
-
-    int string_length = json_value.end - json_value.start;
-    int key_length = json_key.end - json_key.start;
-
-    char value[string_length+1] = {'\0'};
-    char key[key_length+1] = {'\0'};
-
-    int idx;
-
-    for (idx = 0; idx < string_length; idx++){
-       value[idx] = json_string[json_value.start + idx ];
-    }
-
-    for (idx = 0; idx < key_length; idx++){
-       key[idx] = json_string[json_key.start + idx];
-    }
-
-    if(strcmp(key, token_name)==0) {
-      if (buffer != NULL) {
-        strcpy(buffer, value);
-        return string_length;
-      }
-    }
-
-    printf("%s : %s\n", key, value);
-    i++;
-  }
-  return -1;
 }
 
 bool check_card(char* nfc_id) {
