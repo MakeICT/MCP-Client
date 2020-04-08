@@ -219,24 +219,24 @@ void app_main()
     red_light.on();
     yellow_light.on();
     green_light.on();
-    client_init();  
+    // client_init();  
     ESP_ERROR_CHECK( nvs_flash_init() );
     initialise_wifi();
     
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                     false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Connected to AP");
-    authenticate_with_contact_credentials();
-    xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
+    // authenticate_with_contact_credentials();
+    // xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
 
     yellow_light.off();
     green_light.off();
     while(1) {
       // printf("%llu\n", esp_timer_get_time());
 
-      if(check_current() > 50) {
-        current_detected_time = esp_timer_get_time();
-      }
+      // if(check_current() > 50) {
+      //   current_detected_time = esp_timer_get_time();
+      // }
 
       if (!power_switch.state() && !state){
         yellow_light.off();
@@ -249,7 +249,7 @@ void app_main()
         yellow_light.off();
         green_light.off();
         red_light.off();
-        post_log(CLIENT_TAG "Power+Off","", "","");
+        // post_log(CLIENT_TAG "Power+Off","", "","");
       }
       else if(power_switch.state() && !state) {
         red_light.on();
