@@ -175,42 +175,7 @@ static void initialise_wifi(void)
 }
 
 bool check_card(char* nfc_id) {
-  int resp_len = get_user_by_NFC(nfc_id);
-  if (resp_len < 2) {
-    post_log(CLIENT_TAG "Could+Not+Find+User","", nfc_id,"deny");
-    return false;
-  }
-  char data[resp_len+1] = {'\0'};
-  get_response(data, resp_len);
-
-  // printf(data);
-
-  jsmntok_t tokens[parse_json(data, NULL)];
-  int num_t = parse_json(data, tokens);
-  int token_len = get_json_token(data, tokens, num_t, "userID", NULL);
-  char userID[token_len]; 
-  get_json_token(data, tokens, num_t, "userID", userID);
-
-  if(atoi(userID) > 0) {
-    int resp_len = check_group_enrollment(userID, CONFIG_GROUP_ID);
-
-    if (resp_len < 3) {
-      post_log(CLIENT_TAG "User+Not+Authorized",userID, nfc_id,"deny");
-      return false;
-    }
-
-    char data[resp_len+1] = {'\0'};
-    get_response(data, resp_len);
-
-    printf("\n");
-    printf(data);
-    printf("\n");
-
-    post_log(CLIENT_TAG, userID, nfc_id, "unlock");
-    return true;
-  }
-  post_log(CLIENT_TAG "Could+Not+Find+User","", nfc_id,"deny");
-  return false;
+  return authenticate_nfc(nfc_id);
 }
     
 void app_main()
