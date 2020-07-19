@@ -13,7 +13,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <FreeRTOS.h>
+#include <freertos/FreeRTOS.h>
 #include <esp_err.h>
 #include <nvs.h>
 #include <esp_wifi.h>
@@ -508,6 +508,8 @@ const char* GeneralUtils::wifiErrorToString(uint8_t errCode) {
 		return "WIFI_REASON_HANDSHAKE_TIMEOUT";
 	case WIFI_REASON_CONNECTION_FAIL:
 		return "WIFI_REASON_CONNECTION_FAIL";
+	case WIFI_REASON_INVALID_PMKID:
+		return "WIFI_REASON_INVALID_PMKID";
 	}
 	return "Unknown ESP_ERR error";
 } // wifiErrorToString
