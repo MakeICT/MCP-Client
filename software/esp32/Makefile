@@ -3,7 +3,8 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := mcp-client
+PROJECT_NAME := console
 
 include $(IDF_PATH)/make/project.mk
+
 

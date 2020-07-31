@@ -7,7 +7,7 @@
 
 #include "SPI.h"
 #include <driver/spi_master.h>
-#include <esp_log.h>
+#include "esp_log.h"
 #include "sdkconfig.h"
 
 //#define DEBUG 1
@@ -45,7 +45,7 @@ SPI::~SPI() {
  * @return N/A.
  */
 void SPI::init(int mosiPin, int misoPin, int clkPin, int csPin) {
-	ESP_LOGD(LOG_TAG, "init: mosi=%d, miso=%d, clk=%d, cs=%d", mosiPin, misoPin, clkPin, csPin);
+	ESP_LOGI(LOG_TAG, "init: mosi=%d, miso=%d, clk=%d, cs=%d", mosiPin, misoPin, clkPin, csPin);
 
 	spi_bus_config_t bus_config;
 	bus_config.sclk_io_num     = clkPin;  // CLK

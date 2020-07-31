@@ -55,6 +55,7 @@ public:
 /**
  * @brief Ringbuffer.
  */
+/*
 class Ringbuffer {
 public:
 	Ringbuffer(size_t length, ringbuf_type_t type = RINGBUF_TYPE_NOSPLIT);
@@ -66,5 +67,5 @@ public:
 private:
 	RingbufHandle_t m_handle;
 };
-
+*/
 #endif /* MAIN_FREERTOS_H_ */

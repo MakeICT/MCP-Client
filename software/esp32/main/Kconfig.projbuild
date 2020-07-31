@@ -1,60 +1,109 @@
-menu "MCP Client Configuration"
+menu "Example Configuration"
 
-config CLIENT_TAG
-    string "Client Tag"
-    default "99+Test+Client+-+"
-    help
-        Unique descriptive identifier for this client.
+	config CLIENT_TAG
+	    int "Client ID"
+	    default "99"
+	    help
+	        Unique id for client
+	
+	config WIFI_SSID
+	    string "WiFi SSID"
+		default "myssid"
+		help
+			SSID (network name) for the example to connect to.
+	
+	config WIFI_PASSWORD
+	    string "WiFi Password"
+		default "mypassword"
+		help
+			WiFi password (WPA or WPA2) for the example to use.
+	
+			Can be left blank if the network has no security set.
+	
+	config SERVER
+	    string "Server Address"
+		default "securitytest.makeict.org"
+		help
+			Address of Master Control Program instance to connect to.
 
-config WIFI_SSID
-    string "WiFi SSID"
-	default "myssid"
-	help
-		SSID (network name) for the example to connect to.
+	config SERVER2
+	    string "Server Address2"
+		default "securitytest2.makeict.org"
+		help
+			Address of Backup Master Control Program instance to connect to.
 
-config WIFI_PASSWORD
-    string "WiFi Password"
-	default "mypassword"
-	help
-		WiFi password (WPA or WPA2) for the example to use.
+	config SERVER_RETRY
+	    int "HTTP Retry Count"
+		default 2
+		help
+			Number of times to reach the MCP server.
+	
+	config PORT
+	    string "Server Port"
+		default "4443"
+		help
+			Port of Master Control Program instance to connect to.
+	
+	config USERNAME
+	    string "MCP Username"
+		default "username"
+		help
+			Username (email) of MCP user.
+	
+	config PASSWORD
+	    string "MCP Password"
+		default "password"
+		help
+			Password of MCP user.
 
-		Can be left blank if the network has no security set.
+	config DOOR_DELAY
+	    int "Door Delay MS"
+		default 500
+		help
+			Delay MS between validation and opening door
 
-config SERVER
-    string "Server Address"
-	default "securitytest.makeict.org"
-	help
-		Address of Master Control Program instance to connect to.
+	config DOOR_OPEN
+	    int "Door Open MS"
+		default 1500
+		help
+			Number of MS to keep door strike energized.
 
-config PORT
-    string "Server Port"
-	default "4443"
-	help
-		Port of Master Control Program instance to connect to.
+	config ALARM_ARM_DELAY
+	    int "Alarm Arm Delay"
+		default 2000
+		help
+			Number of ms to delay between button pus, and sending arm signal to Alarm panel.
 
-config USERNAME
-    string "MCP Username"
-	default "username"
-	help
-		Username (email) of MCP user.
+	config ALARM_ARM_RETRY
+	    int "Alarm Arm Retry Count"
+		default 4
+		help
+			Number of time to retry arming the alarm panel.
 
-config PASSWORD
-    string "MCP Password"
-	default "password"
-	help
-		Password of MCP user.
+	config ALARM_DISARM_DELAY
+	    int "Alarm Disarm Delay"
+		default 5000
+		help
+			Delay to wait for alarm to disarm befor giving up. 
+	
+	
+	config GROUP_ID
+	    string "MCP Group Id"
+	    default "0000"
+	    help
+	        ID of the MCP group to check.
+	
+	config CURRENT_TIMEOUT
+	    int "Current Sensor Timeout"
+	    default 5
+	    help
+	        Number of seconds before client deactivates due to current below threshold.
 
-config GROUP_ID
-    string "MCP Group Id"
-    default "0000"
-    help
-        ID of the MCP group to check.
-
-config CURRENT_TIMEOUT
-    int "Current Sensor Timeout"
-    default 5
-    help
-        Number of seconds before client deactivates due to current below threshold.
+    config ESP_MAXIMUM_RETRY
+        int "Maximum retry"
+        default 5
+        help
+            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
 
 
 endmenu

@@ -18,12 +18,12 @@
 
 #include "MFRC522.h"
 #include "MFRC522Debug.h"
-#include <FreeRTOS.h>
+#include "esp_log.h"
 #include <GPIO.h>
 #include <string.h>
 #include <sstream>
 #include <iomanip>
-#include <esp_log.h>
+#include "FreeRTOS.h"
 
 static const char LOG_TAG[] = "MFRC522";
 
@@ -180,7 +180,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
  * Initializes the MFRC522 chip.
  */
 void MFRC522::PCD_Init() {
-	//m_spi.setHost(VSPI_HOST);
+	m_spi.setHost(HSPI_HOST);
 	m_spi.init();
 
 	bool hardReset = false;
@@ -201,7 +201,8 @@ void MFRC522::PCD_Init() {
 			ESP32CPP::GPIO::setOutput((gpio_num_t)_resetPowerDownPin);
 			ESP32CPP::GPIO::high((gpio_num_t)_resetPowerDownPin);		// Exit power down mode. This triggers a hard reset.
 			// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-			FreeRTOS::sleep(50);
+			sleep(50);
+
 			hardReset = true;
 		}
 	}
@@ -250,7 +251,8 @@ void MFRC522::PCD_Reset() {
 	// The datasheet does not mention how long the SoftRest command takes to complete.
 	// But the MFRC522 might have been in soft power-down mode (triggered by bit 4 of CommandReg)
 	// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-	FreeRTOS::sleep(50);
+	sleep(50);
+
 	// Wait for the PowerDown bit in CommandReg to be cleared
 	while (PCD_ReadRegister(CommandReg) & (1<<4)) {
 		// PCD still restarting - unlikely after waiting 50ms, but better safe than sorry.
