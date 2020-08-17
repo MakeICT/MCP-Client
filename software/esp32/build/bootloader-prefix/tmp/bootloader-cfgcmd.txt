@@ -1,1 +1,0 @@
-cmd='C:/Users/trbloom/.espressif/tools/cmake/3.13.4/bin/cmake.exe;-DSDKCONFIG=C:/devel/eclipse-workspace/console/sdkconfig;-DIDF_PATH=C:/devel/esp-idf;-DIDF_TARGET=esp32;-DPYTHON_DEPS_CHECKED=1;-DEXTRA_COMPONENT_DIRS=C:/devel/esp-idf/components/bootloader;-DLEGACY_INCLUDE_COMMON_HEADERS=;-GNinja;<SOURCE_DIR><SOURCE_SUBDIR>'
