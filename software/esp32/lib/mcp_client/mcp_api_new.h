@@ -37,7 +37,11 @@ static const char *API_TAG = "MCP_API";
 // #define WEB_SERVER CONFIG_SERVER ":" CONFIG_PORT
 // #define WEB_URL CONFIG_SERVER
 
-uint8_t client_id = 1;
+#define CLIENT_TAG CONFIG_CLIENT_TAG
+
+
+int client_id = CLIENT_TAG;
+
 QueueHandle_t response_queue;
 
 esp_err_t _http_event_handle(esp_http_client_event_t *evt)
