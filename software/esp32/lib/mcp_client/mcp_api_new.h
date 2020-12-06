@@ -228,6 +228,31 @@ bool authenticate_nfc(char* nfc_id) {
 
     char* data = api_call(endpoint, payload); 
 
+    if(data==0){
+        ESP_LOGE(API_TAG, "ERROR");
+    	return status;
+    }
+
+    if(data)  {
+        cJSON *root = cJSON_Parse(data);
+
+        char *authorized = cJSON_GetObjectItem(root, "authorized")->valuestring;
+        if(strcmp(authorized, "true") == 0) {
+            status = true;
+            ESP_LOGI(API_TAG, "Card Accepted!");
+        } 
+        else {
+            ESP_LOGI(API_TAG, "Card Denied!");
+        }
+
+        cJSON_Delete(root);
+        vPortFree(data);
+    }
+
+    free(endpoint);
+
+    return status;
+}
     if(data)  {
         cJSON *root = cJSON_Parse
         (data);
