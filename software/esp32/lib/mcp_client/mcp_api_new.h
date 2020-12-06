@@ -89,47 +89,46 @@ typedef struct {
 static void http_api_task(void *pvParameters)
 {
     api_call_data_t data = *(api_call_data_t*) pvParameters;
-    char* url{ new char[strlen(data.endpoint) + strlen(WEB_URL "/api/") + 1]{'\0'}};
-    
     esp_err_t err = ESP_OK;
-    do {    
-        // client_init();
-        esp_http_client_handle_t client;
-        
-        esp_http_client_config_t config = {
-        };
 
-        config.event_handler = _http_event_handle;
-        config.url = WEB_URL;
-        // config.buffer_size = 2048;
-        // config.timeout_ms = 2000;
+    	char* url;
 
+		// client_init();
+		esp_http_client_handle_t client;
 
-        client = esp_http_client_init(&config);
-        // esp_http_client_set_header(client, "Connection", "keep-alive");
+		esp_http_client_config_t config = {
+		};
 
+		config.event_handler = _http_event_handle;
+		// config.cert_pem = server_root_cert_pem;
+		// config.buffer_size = 2048;
+		config.timeout_ms = 2000;
+		// esp_http_client_set_header(client, "Connection", "keep-alive");
 
+			ESP_LOGI(API_TAG, "primary server");
+    	    url =  new char[strlen(data.endpoint) + strlen(WEB_URL "/api/") + 1]{'\0'};
+			config.url = WEB_URL;
+			sprintf(url, "%s/api/%s", WEB_URL, data.endpoint);
+			ESP_LOGI(API_TAG, "STRING LENGTH: %d : %s", strlen(data.endpoint) + strlen(CONFIG_SERVER "/api/") + 1, url);
 
-        sprintf(url, "%s/api/%s", WEB_URL, data.endpoint);
-        esp_http_client_set_url(client, url);
-        // ESP_LOGI(API_TAG, "STRING LENGTH: %d : %s", strlen(data.endpoint) + strlen(CONFIG_SERVER "/api/") + 1, url);
+			client = esp_http_client_init(&config);
+			esp_http_client_set_url(client, url);
 
-        esp_http_client_set_method(client, HTTP_METHOD_GET);
-        esp_http_client_set_header(client, "Content-Type", "application/json");
-        esp_http_client_set_post_field(client, data.post_data, strlen(data.post_data));
+			esp_http_client_set_method(client, HTTP_METHOD_GET);
+			esp_http_client_set_header(client, "Content-Type", "application/json");
+			esp_http_client_set_post_field(client, data.post_data, strlen(data.post_data));
 
+			err = esp_http_client_perform(client);
+	//        char buffer[2048] = {'\0'};
+			// ESP_LOGI(API_TAG, "Length: %d", esp_http_client_read(client, buffer, 2048));
+			// ESP_LOGI(API_TAG, "Content: %s", buffer);
 
-        err = esp_http_client_perform(client);
-        char buffer[2048] = {'\0'};
-        // ESP_LOGI(API_TAG, "Length: %d", esp_http_client_read(client, buffer, 2048));
-        // ESP_LOGI(API_TAG, "Content: %s", buffer);
-
-        if (err == ESP_OK) {
-            if (esp_http_client_get_status_code(client) != 200)
-                ESP_LOGD(API_TAG, "Status = %d", esp_http_client_get_status_code(client));
-            else
-            {
-                uint8_t content_length = esp_http_client_get_content_length(client);
+			if (err == ESP_OK) {
+				if (esp_http_client_get_status_code(client) != 200)
+					ESP_LOGI(API_TAG, "Status = %d", esp_http_client_get_status_code(client));
+				else
+				{
+					uint8_t content_length = esp_http_client_get_content_length(client);
 
                 ESP_LOGI(API_TAG, "Status = %d, content_length = %d",
                 esp_http_client_get_status_code(client),
@@ -143,18 +142,31 @@ static void http_api_task(void *pvParameters)
 
                 xQueueSend(response_queue, (void*) &data, (TickType_t) 0);
             }
-        }
-        else {
-            ESP_LOGE(API_TAG, "Error %d %s", err, esp_err_to_name(err));
-            if (err == ESP_FAIL)
-                ESP_LOGE(API_TAG, "ESP_FAIL");
-            }
-        esp_http_client_close(client);
-        esp_http_client_cleanup(client);        
-    } while(err != ESP_OK);
+			}
+			else {
+				ESP_LOGE(API_TAG, "Error %d %s", err, esp_err_to_name(err));
+				if (err == ESP_FAIL){
+					ESP_LOGE(API_TAG, "ESP_FAIL");
+				}
+//					vTaskDelay(100 / portTICK_PERIOD_MS);
 
-    delete[] url;
-    free(pvParameters);
+				char* data = (char*) pvPortMalloc(6);
+				data[0] = 'E';
+				data[1] = 'R';
+				data[2] = 'R';
+				data[3] = 'O';
+				data[4] = 'R';
+				data[5] = '\0';
+
+				xQueueSend(response_queue, (void*) &data , (TickType_t) 0);
+
+			}
+			esp_http_client_close(client);
+			esp_http_client_cleanup(client);
+
+			delete[] url;
+
+	free(pvParameters);
     vTaskDelete(NULL);
 }
 
@@ -162,9 +174,10 @@ static void http_api_task(void *pvParameters)
 char* api_call(const char* endpoint, char* payload) {
     // char signature[65] = {'\0'};
     // calculate_hmac(CONFIG_SECRET_KEY, payload, signature);
+    char* response;
+    api_call_data_t* data;
 
-
-    api_call_data_t* data = (api_call_data_t*) malloc(sizeof(api_call_data_t));
+    data = (api_call_data_t*) malloc(sizeof(api_call_data_t));
 
     // api_call_data_t data;
     strcpy(data->endpoint, endpoint);
@@ -185,14 +198,19 @@ char* api_call(const char* endpoint, char* payload) {
 
     xTaskCreate(&http_api_task, "http_api_task", 8192, (void*) data, 5, NULL);
 
-    char* response;
-    if(xQueueReceive(response_queue, &response, (TickType_t) 1000 )) {
-        ESP_LOGI(API_TAG, "API Call Response: %s", response);
+    if(xQueueReceive(response_queue, &response, (TickType_t) 2000 )) {
+
+    	if (strcmp(response, "ERROR") == 0){
+    		return NULL;
+    	}
+
+    	ESP_LOGI(API_TAG, "API Call Response: %s", response);
         return response;
-    }
-    else {
+    } else {
         ESP_LOGI(API_TAG, "API Call did not return in time");
+//        free(data);
     }
+
 
     return NULL;
 }
