@@ -95,7 +95,6 @@ static void http_api_task(void *pvParameters)
         };
 
         config.event_handler = _http_event_handle;
-        // config.cert_pem = server_root_cert_pem;
         config.url = WEB_URL;
         // config.buffer_size = 2048;
         // config.timeout_ms = 2000;
