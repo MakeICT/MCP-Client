@@ -180,7 +180,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
  * Initializes the MFRC522 chip.
  */
 void MFRC522::PCD_Init() {
-	//m_spi.setHost(VSPI_HOST);
+	m_spi.setHost(HSPI_HOST);
 	m_spi.init();
 
 	bool hardReset = false;

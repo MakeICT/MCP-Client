@@ -27,12 +27,12 @@ public:
 	/**
 	 * @brief The default MOSI pin.
 	 */
-  static const int DEFAULT_MOSI_PIN = GPIO_NUM_13;
+  static const int DEFAULT_MOSI_PIN = GPIO_NUM_15;
 
   /**
    * @brief The default MISO pin.
    */
-  static const int DEFAULT_MISO_PIN = GPIO_NUM_12;
+  static const int DEFAULT_MISO_PIN = GPIO_NUM_2;
 
   /**
    * @brief The default CLK pin.
@@ -42,7 +42,7 @@ public:
   /**
    * @brief The default CS pin.
    */
-  static const int DEFAULT_CS_PIN   = GPIO_NUM_15;
+  static const int DEFAULT_CS_PIN   = GPIO_NUM_17;
 
   /**
    * @brief Value of unset pin.
