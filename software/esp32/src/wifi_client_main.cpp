@@ -126,6 +126,117 @@ void init(void)
 {
   card_reader.init();
   state = 0;
+static int call_count=0;
+
+static void led_handler_task(void* arg)
+{
+	call_count++;
+	static bool blink=0;
+	static int blinkOn=250;
+	static int blinkOff=750;
+	static int lastState=-1;
+	static int sleepcount=0;
+    for(;;) {
+//		printf("%d:%d,",state, lastState);
+
+    	if(state!=lastState){
+    		printf("Changing state from %d to %d (%d)\n",lastState, state,call_count);
+
+    	    gpio_set_level((gpio_num_t)LED_RED, 0);
+    	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+
+    		blink=0;
+    		sleepcount=0;
+
+    		switch(state){
+
+
+    		case STATE_AUTHORIZING:
+    			blinkOn=100;
+    			blinkOff=100;
+    			break;
+    		case STATE_SYSTEM_START:
+    			blinkOn=25;
+    			blinkOff=150;
+    			break;
+    		case STATE_UNLOCKING_DOOR:
+    			blinkOn=250;
+    			blinkOff=250;
+    			break;
+    		case STATE_CARD_REJECT:
+        	    gpio_set_level((gpio_num_t)LED_RED, 1);
+        	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+        	    vTaskDelay(1500 / portTICK_RATE_MS);
+    			break;
+    		case STATE_WAIT_CARD:
+    			blinkOn=50;
+    			blinkOff=1000;
+				break;
+    		default:
+    			blinkOn=1000;
+    			blinkOff=1000;
+    		}
+    	}else{
+    		if(blink==1){
+    			if(sleepcount>=blinkOn){
+        			blink=0;
+        			sleepcount=0;
+    			}
+
+    		}else{
+    			if(sleepcount>=blinkOff){
+        			blink=1;
+        			sleepcount=0;
+    			}
+    		}
+
+    		switch(state){
+    		case STATE_SYSTEM_START:
+        	    gpio_set_level((gpio_num_t)LED_RED, 0);
+        	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, blink);
+    			break;
+    		case STATE_WAIT_CARD:
+        	    gpio_set_level((gpio_num_t)LED_RED, 0);
+        	    gpio_set_level((gpio_num_t)LED_GREEN, blink);
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, 1);
+    			break;
+    		case STATE_AUTHORIZING:
+        		gpio_set_level((gpio_num_t)LED_RED, blink);
+        	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    			break;
+    		case STATE_UNLOCKING_DOOR:
+        		if(blink){
+            	    gpio_set_level((gpio_num_t)LED_RED, 1);
+            	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+        		}else{
+            	    gpio_set_level((gpio_num_t)LED_RED, 0);
+            	    gpio_set_level((gpio_num_t)LED_GREEN, 1);
+        		}
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    			break;
+    		case STATE_UNLOCKED_DOOR:
+            	gpio_set_level((gpio_num_t)LED_RED, 0);
+            	gpio_set_level((gpio_num_t)LED_GREEN, 1);
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    			break;
+    		default:
+            	gpio_set_level((gpio_num_t)LED_RED, blink);
+            	gpio_set_level((gpio_num_t)LED_GREEN, blink);
+        	    gpio_set_level((gpio_num_t)LED_YELLOW, blink);
+
+    		}
+    	}
+
+    	lastState = state;
+
+    	sleepcount+=25;
+    	vTaskDelay(25 / portTICK_RATE_MS);
+
+    }
 }
     
 static esp_err_t event_handler(void *ctx, system_event_t *event)
