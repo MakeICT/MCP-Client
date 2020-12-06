@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <MFRC522.h>
+#include "../cpp_tools/MFRC522.h"
 #include <esp_log.h>
 static const char LOG_TAG[] = "DumpInfo";
 
@@ -40,4 +40,4 @@ class Reader {
 };
 
 
-#endif
+#endif /* READER_H_ */

@@ -7,7 +7,7 @@
 
 #ifndef COMPONENTS_CPP_UTILS_SPI_H_
 #define COMPONENTS_CPP_UTILS_SPI_H_
-#include <driver/spi_master.h>
+#include "driver/spi_master.h"
 #include <driver/gpio.h>
 /**
  * @brief Handle %SPI protocol.

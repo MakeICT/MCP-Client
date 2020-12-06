@@ -6,19 +6,18 @@
  */
 
 #include "GeneralUtils.h"
-#include <esp_log.h>
-#include <esp_system.h>
+#include "esp_log.h"
+#include "esp_system.h"
 #include <string.h>
 #include <stdio.h>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <freertos/FreeRTOS.h>
-#include <esp_err.h>
-#include <nvs.h>
-#include <esp_wifi.h>
-#include <esp_heap_caps.h>
-#include <esp_system.h>
+#include <nvs_flash.h>
+#include "esp_err.h"
+#include "esp_wifi.h"
+#include "esp_heap_caps.h"
 
 static const char* LOG_TAG = "GeneralUtils";
 
@@ -508,8 +507,6 @@ const char* GeneralUtils::wifiErrorToString(uint8_t errCode) {
 		return "WIFI_REASON_HANDSHAKE_TIMEOUT";
 	case WIFI_REASON_CONNECTION_FAIL:
 		return "WIFI_REASON_CONNECTION_FAIL";
-	case WIFI_REASON_INVALID_PMKID:
-		return "WIFI_REASON_INVALID_PMKID";
 	}
 	return "Unknown ESP_ERR error";
 } // wifiErrorToString

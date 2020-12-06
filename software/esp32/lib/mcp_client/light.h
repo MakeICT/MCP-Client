@@ -1,7 +1,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
+#include <driver/gpio.h>
 
-#include "driver/gpio.h"
 
 class Light {
     public:

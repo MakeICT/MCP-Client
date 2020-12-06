@@ -13,8 +13,9 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "nvs_flash.h"
+#include <cstring>
 
-#include "esp_http_client.h"
+#include <esp_http_client.h>
 #include "mbedtls/md.h"
 
 #include "lwip/err.h"

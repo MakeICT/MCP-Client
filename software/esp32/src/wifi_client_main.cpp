@@ -23,19 +23,21 @@
  */
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 #include "esp_event_loop.h"
+#include "esp_event.h"
 #include "esp_log.h"
 #include "esp_system.h"
+#include "esp_err.h"
 #include "nvs_flash.h"
 #include "esp_task_wdt.h"
 #include <driver/adc.h>
 #include <esp_timer.h>
-
-#include "esp_log.h"
+#include <driver/gpio.h>
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -44,10 +46,9 @@
 #include "lwip/dns.h"
 
 // #include "utils.h"
-#include "mcp_api_new.h"
+#include "../mcp_client/mcp_api_new.h"
 #include <reader.h>
-#include <light.h>
-#include <switch.h>
+#include "sdkconfig.h"
 
 /* The examples use simple WiFi configuration that you can set via
    'make menuconfig'.

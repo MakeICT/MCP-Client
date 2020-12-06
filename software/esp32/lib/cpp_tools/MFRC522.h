@@ -78,7 +78,9 @@
 
 
 #include <stdint.h>
-#include <SPI.h>
+#include "SPI.h"
+#include <freertos/FreeRTOS.h>
+
 
 typedef uint8_t byte;
 
