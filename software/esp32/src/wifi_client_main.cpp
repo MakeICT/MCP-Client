@@ -140,6 +140,25 @@ static int s_retry_num = 0;
 #define GPIO_OUTPUT_LED_PIN_SEL  ((1ULL<< LED_RED) | (1ULL<< LED_YELLOW) | (1ULL<< LED_GREEN))
 //#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
 
+
+//#define LED_STRIP_LENGTH 3U
+//#define LED_STRIP_RMT_INTR_NUM 19U
+//
+//static struct led_color_t led_strip_buf_1[LED_STRIP_LENGTH];
+//static struct led_color_t led_strip_buf_2[LED_STRIP_LENGTH];
+//
+//struct led_strip_t led_strip = {
+//    .rgb_led_type = RGB_LED_TYPE_WS2812,
+//    .rmt_channel = RMT_CHANNEL_1,
+//    .rmt_interrupt_num = LED_STRIP_RMT_INTR_NUM,
+//    .gpio = GPIO_NUM_16,
+//    .led_strip_buf_1 = led_strip_buf_1,
+//    .led_strip_buf_2 = led_strip_buf_2,
+//    .led_strip_length = LED_STRIP_LENGTH
+//};
+
+
+
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
 
@@ -183,10 +202,6 @@ Reader card_reader;
 //Light disarm_alarm((gpio_num_t)25);
 //Switch power_switch((gpio_num_t)32);
 
-// static const char *REQUEST = "POST " AUTH_ENDPOINT "?email=" CONFIG_USERNAME    "&password=" CONFIG_PASSWORD "\r\n"
-//     "Host: " WEB_SERVER "\r\n"
-//     "Content-Type: application/x-www-form-urlencoded\r\n"
-//     "\r\n";
 /**
  * @brief gpio_isr_handler  Handle button press interrupt
  */
@@ -211,6 +226,13 @@ static xQueueHandle gpio_evt_queue = NULL;
 */
 // extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
 // extern const uint8_t server_root_cert_pem_end[]   asm("_binary_server_root_cert_pem_end");
+
+// static const char *REQUEST = "POST " AUTH_ENDPOINT "?email=" CONFIG_USERNAME    "&password=" CONFIG_PASSWORD "\r\n"
+//     "Host: " WEB_SERVER "\r\n"
+//     "Content-Type: application/x-www-form-urlencoded\r\n"
+//     "\r\n";
+
+
 
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
@@ -591,6 +613,81 @@ bool check_card(char* nfc_id) {
   return authenticate_nfc(nfc_id);
 }
     
+
+//static void event_handler(void* arg, esp_event_base_t event_base,
+//                                int32_t event_id, void* event_data)
+//{
+//    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+//        esp_wifi_connect();
+//    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+//        if (s_retry_num < ESP_MAXIMUM_RETRY) {
+//            esp_wifi_connect();
+//            s_retry_num++;
+//            ESP_LOGI(TAG, "retry to connect to the AP");
+//        } else {
+//            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+//        }
+//        ESP_LOGI(TAG,"connect to the AP fail");
+//    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+//        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+//        ESP_LOGI(TAG, "got ip:%s",
+//                 ip4addr_ntoa(&event->ip_info.ip));
+//        s_retry_num = 0;
+//        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+//    }
+//}
+
+//static const char *ATAG = "alarm_comm";
+
+//static void alarm_communication_task(void *pvParameters)
+//{
+//
+////	bool alarm_active = 0;
+////	bool arming    = 0;
+////	bool disarming = 0;
+////	bool motion    = 0;
+////	int  arm_cycle_count = 0;
+//	int alarm_send_delay=500;
+//	int alarm_cycle_max = 10;
+//
+//	char *pcTaskName;
+//	pcTaskName = ( char * ) pvParameters;
+//
+//	for( ;; ){
+//
+//		if(arm_state_needed<0){
+//			ESP_LOGI(ATAG, "Disarming alarm");
+//			gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
+//			vTaskDelay(alarm_send_delay / portTICK_PERIOD_MS);
+//			gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
+//
+//		}else if(arm_state_needed>0){
+//			ESP_LOGI(ATAG, "Arming alarm");
+//
+//			while(arm_cycle_count<alarm_cycle_max && alarm_active==0){
+//				arm_cycle_count++;
+//				gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 1);
+//				vTaskDelay(alarm_send_delay / portTICK_PERIOD_MS);
+//				gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
+//
+//				for(int i = 0; alarm_active==0 && i < 10 ; i++){
+//					vTaskDelay(250 / portTICK_PERIOD_MS);
+//					ESP_LOGI(ATAG, "Waiting on alarm");
+//				}
+//			}
+//			if(arm_state_needed>0 && alarm_active==0){
+//				ESP_LOGI(ATAG, "Arming failed, Send notification");
+//			}
+//
+//		}
+//
+//		vTaskDelay(10 / portTICK_PERIOD_MS);
+//	}
+//
+//
+//	free(pvParameters);
+//    vTaskDelete(NULL);
+//}
 void app_main()
 {
 
