@@ -50,6 +50,26 @@
 #include <reader.h>
 #include "sdkconfig.h"
 
+
+
+/* The examples use WiFi configuration that you can set via project configuration menu
+
+   If you'd rather not, just change the below entries to strings with
+   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
+*/
+
+/* FreeRTOS event group to signal when we are connected*/
+//static EventGroupHandle_t s_wifi_event_group;
+
+/* The event group allows multiple bits for each event, but we only care about two events:
+ * - we are connected to the AP with an IP
+ * - we failed to connect after the maximum amount of retries */
+#define WIFI_CONNECTED_BIT BIT0
+#define WIFI_FAIL_BIT      BIT1
+
+
+static int s_retry_num = 0;
+
 /* The examples use simple WiFi configuration that you can set via
    'make menuconfig'.
 
@@ -58,6 +78,7 @@
 */
 #define WIFI_SSID CONFIG_WIFI_SSID
 #define WIFI_PASS CONFIG_WIFI_PASSWORD
+#define ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
 
 #define SERVER CONFIG_SERVER
 #define SERVER2 CONFIG_SERVER2
@@ -399,8 +420,21 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     case SYSTEM_EVENT_STA_DISCONNECTED:
         /* This is a workaround as ESP32 WiFi libs don't currently
            auto-reassociate. */
-        esp_wifi_connect();
-        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+
+		if (s_retry_num < ESP_MAXIMUM_RETRY) {
+			esp_wifi_connect();
+			s_retry_num++;
+			ESP_LOGI(TAG, "retry to connect to the AP");
+	        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+		} else {
+			//			xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+			ESP_LOGI(TAG, "failed to connect, sleeping 5 minutes");
+			vTaskDelay(300000 / portTICK_PERIOD_MS);
+			esp_wifi_connect();
+			s_retry_num=0;
+
+		}
+
         break;
     default:
         break;
