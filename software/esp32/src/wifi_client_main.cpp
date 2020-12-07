@@ -130,14 +130,21 @@ const int CONNECTED_BIT = BIT0;
 
 static const char *TAG = "wifi_client_main";
 
+static const short STATE_UNKNOWN 		= 0;
+static const short STATE_SYSTEM_START 	= 1;
+static const short STATE_WAIT_CARD 		= 2;
+static const short STATE_AUTHORIZING 	= 3;
+static const short STATE_CARD_REJECT	= 4;
+static const short STATE_UNLOCKING_DOOR = 5;
+static const short STATE_UNLOCKED_DOOR 	= 6;
 
 extern "C" {
   void app_main();
 }
 
-int state;
-long long int power_on_time;
-long long int current_detected_time;
+static int state = STATE_SYSTEM_START;
+//int power_on_time;
+//int current_detected_time;
 
 Reader card_reader;
 //Light red_light((gpio_num_t)17);
