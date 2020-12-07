@@ -158,7 +158,17 @@ Reader card_reader;
 //     "Host: " WEB_SERVER "\r\n"
 //     "Content-Type: application/x-www-form-urlencoded\r\n"
 //     "\r\n";
+/**
+ * @brief gpio_isr_handler  Handle button press interrupt
+ */
 
+bool alarm_active = 0;
+int  arm_state_needed = 0;
+bool motion    = 0;
+int  arm_cycle_count = 0;
+TickType_t motion_timeout = 0;
+
+static xQueueHandle gpio_evt_queue = NULL;
 
 /* Letsencrypt root cert, taken from server_root_cert.pem
 
@@ -173,10 +183,89 @@ Reader card_reader;
 // extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
 // extern const uint8_t server_root_cert_pem_end[]   asm("_binary_server_root_cert_pem_end");
 
-void init(void)
+static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-  card_reader.init();
-  state = 0;
+
+    uint32_t gpio_num = (uint32_t) arg;
+    xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
+}
+bool pvalue=0;
+bool arm_button_last=0;
+bool bell_button_last=0;
+static void gpio_task_io_handler(void* arg)
+{
+    uint32_t io_num=99999;
+    for(;;) {
+    	vTaskDelay(100 / portTICK_RATE_MS);
+    	if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
+    		pvalue=gpio_get_level((gpio_num_t)io_num);
+
+//            printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level((gpio_num_t)io_num));
+            if(io_num == ALARM_STATE_INPUT){
+            	if(pvalue==0 && alarm_active ==0){
+            		printf("Alarm on\n");
+            		alarm_active = 1;
+            	}if(pvalue==1 && alarm_active ==1){
+            		printf("Alarm off\n");
+            		alarm_active = 0;
+//            	}else{
+//            		printf("no change skipping\n");
+            	}
+
+            }else if(io_num == DOOR_BELL_INPUT){
+            	if(arm_button_last!=pvalue && pvalue==0){
+            		printf("Ding Dong!\n");
+            	}
+            	arm_button_last=pvalue;
+            }else if(io_num == ALARM_ARM_INPUT){
+
+            	if(arm_button_last!=pvalue){
+                	if(arm_cycle_count>1){
+                		arm_cycle_count = 0;//resetting arm count
+                	}
+
+                	if(arm_state_needed<=0){
+                    	ESP_LOGI(TAG, "Alarm button pushed.");
+            			if(xTaskGetTickCount()<motion_timeout){
+    						ESP_LOGI(TAG, "Motion detected can't arm. %d < %d", xTaskGetTickCount(), motion_timeout);
+    					}else{
+    						arm_state_needed++;
+    					}
+
+                	}else{
+                		ESP_LOGI(TAG, "Alarm button pushed.   Skipping");
+                	}
+//            	}else{
+//            		ESP_LOGI(TAG, "AButton no change skipping");
+            	}
+            	arm_button_last=pvalue;
+//            }else if(io_num == ALARM_MOTION_INPUT){
+//            	if(pvalue==0){
+//            		printf("Alarm motion\n");
+//            		ESP_LOGI(TAG, "Arm motion active. Resetting countdown");
+//            		motion_timeout = xTaskGetTickCount()+(30*1000 / portTICK_PERIOD_MS);
+//            	}
+//
+            }else{
+            	//UNKNOWN IO
+                printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level((gpio_num_t)io_num));
+            }
+
+
+        }
+    }
+}
+
+//typedef struct {
+//  int gpioNum;
+//  int ledMode;
+//  void * _stateVars;
+//} ledState_t;
+//
+//ledState_t LED_MODES[] = {
+//  {.gpioNum = 0, .gpioNum = LED_OUTPUT, .ledType = LED_WS2812B_V2, .brightLimit = 24, .numPixels =  1},
+//};
+
 static int call_count=0;
 
 static void led_handler_task(void* arg)
@@ -338,6 +427,100 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
+
+void init(void)
+{
+
+    ESP_LOGI(TAG,"Setting up pins");
+
+    gpio_config_t io_conf;
+    gpio_config_t io_conf2;
+    gpio_config_t io_conf3;
+    gpio_config_t io_conf4;
+
+
+    io_conf.intr_type = (gpio_int_type_t)GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    io_conf.pull_down_en = (gpio_pulldown_t)1;
+    io_conf.pull_up_en = (gpio_pullup_t)0;
+    gpio_config(&io_conf);
+
+    io_conf2.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
+    io_conf2.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+    io_conf2.mode = GPIO_MODE_INPUT;
+    io_conf2.pull_down_en = (gpio_pulldown_t) 0;
+    io_conf2.pull_up_en = (gpio_pullup_t)1;
+    gpio_config(&io_conf2);
+
+
+
+    io_conf3.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;
+    io_conf3.mode = GPIO_MODE_OUTPUT;
+    io_conf3.pin_bit_mask = GPIO_OUTPUT_LED_PIN_SEL;
+    io_conf3.pull_down_en = (gpio_pulldown_t)1;
+    io_conf3.pull_up_en = (gpio_pullup_t)0;
+    gpio_config(&io_conf3);
+
+
+
+    io_conf4.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
+    io_conf4.pin_bit_mask = GPIO_INPUT2_PIN_SEL;
+    io_conf4.mode = GPIO_MODE_INPUT;
+    io_conf4.pull_down_en = (gpio_pulldown_t) 1;
+    io_conf4.pull_up_en = (gpio_pullup_t)0;
+    gpio_config(&io_conf4);
+
+
+
+    //change gpio intrrupt type for one pin
+//    gpio_set_intr_type(ALARM_STATE_INPUT, (gpio_int_type_t) GPIO_INTR_ANYEDGE);
+
+    //create a queue to handle gpio event from isr
+    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+    //start gpio task
+    xTaskCreate(gpio_task_io_handler, "gpio_task_io", 2048, NULL, 10, NULL);
+    xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
+
+
+    //    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    gpio_isr_handler_add((gpio_num_t)ALARM_STATE_INPUT, gpio_isr_handler, (void*) ALARM_STATE_INPUT);
+    gpio_isr_handler_add((gpio_num_t)ALARM_ARM_INPUT, gpio_isr_handler, (void*) ALARM_ARM_INPUT);
+    gpio_isr_handler_add((gpio_num_t)DOOR_BELL_INPUT, gpio_isr_handler, (void*) DOOR_BELL_INPUT);
+    //    gpio_isr_handler_add((gpio_num_t)ALARM_MOTION_INPUT, gpio_isr_handler, (void*) ALARM_MOTION_INPUT);
+
+    gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
+    gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
+    gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
+
+    gpio_set_level((gpio_num_t)LED_RED, 0);
+    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+
+
+//    gpio_pad_select_gpio((gpio_num_t)ALARM_STATE_INPUT);
+//    gpio_set_direction((gpio_num_t)ALARM_STATE_INPUT, GPIO_MODE_INPUT);
+//    ESP_LOGI(TAG,"debug p ");
+//
+//    gpio_pad_select_gpio((gpio_num_t)ALARM_MOTION_INPUT);
+//    gpio_set_direction((gpio_num_t)ALARM_MOTION_INPUT, GPIO_MODE_INPUT);
+//    ESP_LOGI(TAG,"debug p ");
+//    gpio_pad_select_gpio((gpio_num_t)ALARM_ARM_INPUT);
+//    gpio_set_direction((gpio_num_t)ALARM_ARM_INPUT, GPIO_MODE_INPUT);
+//    gpio_set_intr_type((gpio_num_t)ALARM_ARM_INPUT, GPIO_INTR_NEGEDGE); //release of button
+//    ESP_LOGI(TAG,"debug p ");
+//
+//    gpio_pad_select_gpio((gpio_num_t)ALARM_ARM_RELAY);
+//    gpio_set_direction((gpio_num_t)ALARM_ARM_RELAY, GPIO_MODE_OUTPUT);
+//    ESP_LOGI(TAG,"debug p ");
+//    gpio_pad_select_gpio((gpio_num_t)ALARM_DISARM_RELAY);
+//    gpio_set_direction((gpio_num_t)ALARM_DISARM_RELAY , GPIO_MODE_OUTPUT);
+//    ESP_LOGI(TAG,"debug p ");
+//    gpio_pad_select_gpio((gpio_num_t)DOOR_STRIKE_RELAY);
+//    gpio_set_direction((gpio_num_t)DOOR_STRIKE_RELAY, GPIO_MODE_OUTPUT);
+}
+    
 bool check_card(char* nfc_id) {
   return authenticate_nfc(nfc_id);
 }
