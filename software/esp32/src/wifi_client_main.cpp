@@ -51,6 +51,11 @@
 #include "sdkconfig.h"
 
 
+extern "C" {
+	#include "../mcp_client/rb_tree.h"
+}
+
+
 
 /* The examples use WiFi configuration that you can set via project configuration menu
 
@@ -139,6 +144,21 @@ static int s_retry_num = 0;
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ALARM_ARM_RELAY)  | (1ULL<< ALARM_DISARM_RELAY)  | (1ULL<< DOOR_STRIKE_RELAY) )
 #define GPIO_OUTPUT_LED_PIN_SEL  ((1ULL<< LED_RED) | (1ULL<< LED_YELLOW) | (1ULL<< LED_GREEN))
 //#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
+
+struct BADGEINFO
+{
+    char* uid_string;
+    bool active  = 0;
+    int scancount = 0;
+    bool needswrite = 0;
+} ;
+
+
+extern int badge_compare_callback (struct rb_tree *self, struct rb_node *node_a, struct rb_node *node_b) {
+    BADGEINFO *a = (BADGEINFO *) node_a->value;
+    BADGEINFO *b = (BADGEINFO *) node_b->value;
+    return strcmp(a->uid_string, b->uid_string);
+}
 
 
 //#define LED_STRIP_LENGTH 3U
@@ -609,6 +629,72 @@ void init(void)
     state = -1;
 }
     
+
+struct rb_tree * loadCache(){
+    ESP_LOGI(TAG,"Allocating cache true");
+
+	//    rb_tree_node_cmp_f cmp = badge_compare_callback;
+	struct rb_tree *tree = rb_tree_create(badge_compare_callback);
+    tree = rb_tree_create(badge_compare_callback);
+
+    //    bool download_success = load_nfc_list();
+
+
+	if (tree) {
+	//
+	////        // Use the tree here...
+	////        for (int i = 0; i < CACHE_SIZE-1; i++) {
+	////            struct BADGEINFO *badge = ( struct BADGEINFO * ) malloc(sizeof( struct BADGEINFO));
+	////            badge->uid_string = (char*)malloc(sizeof("04b329d2784c81"));
+	////            strcpy(badge->uid_string,"04b329d2784c81");
+	////            badge->active = 1;
+	////            badge->scancount = 0;
+	////            if(i%100==1){
+	////            	ESP_LOGI(TAG, "%d",i);
+	////            }
+	////
+	////            // Default insert, which allocates internal rb_nodes for you.
+	////            rb_tree_insert(tree, badge);
+	////        }
+	//
+		struct BADGEINFO *badge = ( struct BADGEINFO * ) malloc(sizeof( struct BADGEINFO));
+		badge->uid_string = (char*)malloc(sizeof(""));
+		strcpy(badge->uid_string,"NOBADGE");
+		badge->active = 0;
+		badge->scancount = 0;
+		rb_tree_insert(tree, badge);
+	//
+	//
+	////        struct BADGEINFO *sbadge = ( struct BADGEINFO * ) malloc(sizeof( struct BADGEINFO));
+	////        sbadge->uid_string = (char*)malloc(sizeof("04b329d2784c80"));
+	////        strcpy(sbadge->uid_string,"04b329d2784c80");
+	////        sbadge->active = 0;
+	////        sbadge->scancount = 0;
+	//
+	//
+	////        struct BADGEINFO *f = ( struct BADGEINFO * ) rb_tree_find(tree, sbadge);
+	////        if (f) {
+	////                fprintf(stdout, "found badge %s  (%d))\n", f->uid_string,f->active);
+	////        } else {
+	////            printf("not found\n");
+	////        }
+	////
+	////        free(sbadge->uid_string);
+	////        free(sbadge);
+	//
+	//        // Dealloc call can take optional parameter to notify on each node
+	//        // being deleted so you can free the node and/or your object:
+	////        rb_tree_dealloc(tree, NULL);
+	    }
+
+
+    ESP_LOGI(TAG,"Finished allocating cache");
+    return tree;
+}
+
+
+
+
 bool check_card(char* nfc_id) {
   return authenticate_nfc(nfc_id);
 }
