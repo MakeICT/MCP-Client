@@ -60,9 +60,17 @@
 #define WIFI_PASS CONFIG_WIFI_PASSWORD
 
 #define SERVER CONFIG_SERVER
+#define SERVER2 CONFIG_SERVER2
 #define PORT CONFIG_PORT
 
-#define CLIENT_TAG CONFIG_CLIENT_TAG
+#define ESP_INTR_FLAG_DEFAULT 0
+
+//#define CONFIG_DOOR_DELAY 500
+//#define CONFIG_DOOR_OPEN 1500
+#define CONFIG_ALARM_ARM_DELAY 2000
+#define CONFIG_ALARM_ARM_RETRY 4
+#define CONFIG_ALARM_DISARM_DELAY 5000
+
 
 #define CURRENT_TIMEOUT CONFIG_CURRENT_TIMEOUT * 1000000
 
@@ -527,94 +535,162 @@ bool check_card(char* nfc_id) {
     
 void app_main()
 {
+
     init();
-    red_light.on();
-    yellow_light.on();
-    green_light.on();
-    // client_init();  
-    ESP_ERROR_CHECK( nvs_flash_init() );
-    initialise_wifi();
-    
-    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
-                    false, true, portMAX_DELAY);
-    ESP_LOGI(TAG, "Connected to AP");
-    // authenticate_with_contact_credentials();
-    // xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
 
-    yellow_light.off();
-    green_light.off();
+    struct rb_tree *tree = NULL; //loadCache();
+
+    bool unlockdoor=0;
+
+
+    ESP_LOGI(TAG, "Starting loop");
+
     while(1) {
-      // printf("%llu\n", esp_timer_get_time());
+    	state = STATE_WAIT_CARD;
 
-      // if(check_current() > 50) {
-      //   current_detected_time = esp_timer_get_time();
-      // }
+//        ESP_LOGI(TAG, "looping,%d %d %d",gpio_get_level((gpio_num_t)ALARM_STATE_INPUT),gpio_get_level((gpio_num_t)ALARM_ARM_INPUT),gpio_get_level((gpio_num_t)ALARM_MOTION_INPUT));
+//    	vTaskDelay(100 / portTICK_PERIOD_MS);
 
-      if (!power_switch.state() && !state){
-        yellow_light.off();
-        green_light.off();
-        red_light.off();
-      }
-      if ((!power_switch.state() || (esp_timer_get_time() - current_detected_time > CURRENT_TIMEOUT)) && state) {
-        machine_power.off();
-        disarm_alarm.off();
-        state = 0;
-        yellow_light.off();
-        green_light.off();
-        red_light.off();
-        // post_log(CLIENT_TAG "Power+Off","", "","");
-      }
-      else if(power_switch.state() && !state) {
-        red_light.on();
+    	// printf("%llu\n", esp_timer_get_time());
         uint8_t uid[7] = {0};
+
+    	unlockdoor=0;
+
+    	vTaskDelay(25 / portTICK_PERIOD_MS);
+
         uint8_t uid_size = card_reader.poll(uid);
+
+        char uid_string[15] = {'\0'};
+
         if (uid_size > 0) {
-          char uid_string[15] = {'\0'};
+          state = STATE_AUTHORIZING;
           sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
           ESP_LOGI(TAG, "Read card UID: %s", uid_string);
-          red_light.off();
-          green_light.off();
-          yellow_light.on();
-          if (check_card(uid_string)) {
-            state = 1;
-            disarm_alarm.on();
-            yellow_light.off();
-            green_light.on();
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-            machine_power.on();
-            power_on_time = esp_timer_get_time();
-            current_detected_time = esp_timer_get_time();
-            // post_log(CLIENT_TAG, userID, nfc_id, "unlock");
+          if( xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT ){
+			  ESP_LOGI(TAG, "Connected to AP");
+			  // authenticate_with_contact_credentials();
+			  // xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
 
-            //vTaskDelay(2000 / portTICK_PERIOD_MS);
+	          if (check_card(uid_string)) {
+	            state = STATE_UNLOCKING_DOOR;
+//	            vTaskDelay(500 / portTICK_PERIOD_MS);
+//	            power_on_time = esp_timer_get_time();
+//	            current_detected_time = esp_timer_get_time();
+	            ESP_LOGI(TAG, "Card Authorized");
+	            unlockdoor=1;
+	          }else { // show deny
+	        	  state = STATE_CARD_REJECT;
+	              ESP_LOGI(TAG, "Card Unuthorized");
+	              unlockdoor=0;
+	          }
+          }else{
+			  ESP_LOGI(TAG, "Wifi AP connection down.");
+
+
           }
-          else { // show deny
-            yellow_light.off();
-            red_light.on();
-            vTaskDelay(300 / portTICK_PERIOD_MS);
-            red_light.off();
-            vTaskDelay(200 / portTICK_PERIOD_MS);
-            red_light.on();
-            vTaskDelay(300 / portTICK_PERIOD_MS);
-            red_light.off();
-            vTaskDelay(200 / portTICK_PERIOD_MS);
-            red_light.on();
-            vTaskDelay(300 / portTICK_PERIOD_MS);
-            red_light.off();
-            vTaskDelay(200 / portTICK_PERIOD_MS);
+
+          if (tree) {
+//              ESP_LOGI(TAG, "debug ");
+			  struct BADGEINFO *sbadge = ( struct BADGEINFO * ) malloc(sizeof( struct BADGEINFO));
+//              ESP_LOGI(TAG, "debug ");
+			  sbadge->uid_string = (char*)malloc(sizeof(uid_string));
+//              ESP_LOGI(TAG, "debug ");
+			  strcpy(sbadge->uid_string,uid_string);
+//              ESP_LOGI(TAG, "debug ");
+
+			  struct BADGEINFO *badgerecord = ( struct BADGEINFO * ) rb_tree_find(tree, sbadge);
+
+//              ESP_LOGI(TAG, "debug 1");
+
+			  if (badgerecord!=NULL) {
+//				  	  ESP_LOGI(TAG, "debug 4");
+					  ESP_LOGI(TAG, "found badge %s  (%d)\n", badgerecord->uid_string , badgerecord->active);
+
+					  free(sbadge->uid_string);
+					  free(sbadge);
+
+			  } else {
+//	              ESP_LOGI(TAG, "debug 5");
+				  if(unlockdoor ){
+//		              ESP_LOGI(TAG, "debug 10");
+					  ESP_LOGI(TAG, "new active badge %s  (%d) adding to cache\n", sbadge->uid_string , sbadge->active);
+					  rb_tree_insert(tree, sbadge);
+					  badgerecord=sbadge;
+					  badgerecord->needswrite = 1;
+				  }else{
+//		              ESP_LOGI(TAG, "debug 2");
+					  free(sbadge->uid_string);
+					  free(sbadge);
+				  }
+			  }
+
+			  if(unlockdoor ){
+//	              ESP_LOGI(TAG, "debug 9");
+				  if(badgerecord && badgerecord->active){
+//		              ESP_LOGI(TAG, "debug 7");
+					  badgerecord->scancount++;
+//		              ESP_LOGI(TAG, "debug 8");
+					  badgerecord->needswrite = 1;
+				  }
+			  }else{
+//	              ESP_LOGI(TAG, "debug 6");
+					if(badgerecord!=NULL && badgerecord->active==1){
+//						ESP_LOGI(TAG, "debug 11");
+						unlockdoor=1;
+					}
+			  }
           }
+
+
+//          ESP_LOGI(TAG, "debug 15");
+          //bool needsalarmcode=0;
+          if(unlockdoor){
+        	  state = STATE_UNLOCKING_DOOR;
+        	  arm_state_needed=-1;
+        	  arm_cycle_count=0;
+
+        	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
+              vTaskDelay( CONFIG_DOOR_DELAY / portTICK_PERIOD_MS);
+        	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
+
+        	  ESP_LOGI(TAG, "Checking alarm state.");
+        	  int retryCount=1;
+
+        	  while(alarm_active==1 && arm_state_needed<1 && retryCount<=10){ //5 second wait to disarm.
+        		  if(retryCount%2==0){
+                	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
+                      vTaskDelay( 500 / portTICK_PERIOD_MS);
+                	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
+        		  }
+        		  ESP_LOGI(TAG, "Waiting for disarm");
+        		  vTaskDelay(500 / portTICK_PERIOD_MS);
+        		  //FIXME: add timeout waiting for door.
+        		  retryCount++;
+        	  }
+
+        	  if(alarm_active){
+        		  ESP_LOGI(TAG, "Failed to disarm Alarm.");
+        		  state = STATE_UNLOCKED_DOOR;
+        	  }else{
+            	  if(arm_state_needed>0){
+            		  ESP_LOGI(TAG, "Arming alarm cancel unlock");
+            	  }else{
+            		  state = STATE_UNLOCKED_DOOR;
+            		  ESP_LOGI(TAG, "Alarm off");
+                	  ESP_LOGI(TAG, "Unlocking door");
+                	  gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 1);
+                      vTaskDelay(CONFIG_DOOR_OPEN / portTICK_PERIOD_MS);
+                	  gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
+                	  ESP_LOGI(TAG, "Locking door");
+            	  }
+        	  }
+          }
+
           esp_task_wdt_reset(); //reset task watchdog
         }
 
-      //   for(int i=0; i< uid_size; i++) {
-      //   printf("%d,", uid[i]);
-      //   }
-      //   printf("\n");
-      }
-      // printf("%d\n",uxTaskGetStackHighWaterMark(NULL));
-    }
+        gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
 
-
-    // xTaskCreate(&https_get_task, "https_get_task", 8192, NULL, 5, NULL);
+   }
 }
 
