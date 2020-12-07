@@ -561,6 +561,30 @@ void init(void)
 //    ESP_LOGI(TAG,"debug p ");
 //    gpio_pad_select_gpio((gpio_num_t)DOOR_STRIKE_RELAY);
 //    gpio_set_direction((gpio_num_t)DOOR_STRIKE_RELAY, GPIO_MODE_OUTPUT);
+
+    ESP_LOGI(TAG,"isr next ");
+
+    /* Install ISR routine */
+
+    ESP_LOGI(TAG,"debug flash ");
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+
+    ESP_ERROR_CHECK(ret);
+    ESP_ERROR_CHECK( nvs_flash_init() );
+    ESP_LOGI(TAG,"debug wifi ");
+    initialise_wifi();
+    ESP_LOGI(TAG,"debug wifi ");
+    //    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,false, true, portMAX_DELAY);
+
+    ESP_LOGI(TAG,"init nfc reader ");
+    card_reader.init();
+    ESP_LOGI(TAG,"init nfc reader finished");
+
+    state = -1;
 }
     
 bool check_card(char* nfc_id) {
