@@ -66,6 +66,50 @@
 
 #define CURRENT_TIMEOUT CONFIG_CURRENT_TIMEOUT * 1000000
 
+#define OLIMEX_REL1_PIN     32
+#define OLIMEX_REL2_PIN     33
+#define OLIMEX_BUT_PIN      34
+
+
+#define USBUARTTX			01
+#define USBUARTRX			03
+#define CANTX				05
+#define CANRX				35
+#define ETH1				19
+#define ETH2				20
+#define ETH3				21
+#define ETH4				22
+#define ETH5				23
+#define ETH6				24
+#define ETH7				25
+#define ETH8				26
+
+#define UEXT3				04
+#define UEXT4				36  //input door bell
+#define UEXT5				16
+#define UEXT6				13
+#define UEXT7				15
+#define UEXT8				02
+#define UEXT9				14
+#define UEXT10				17
+
+#define LED_RED				UEXT6
+#define LED_YELLOW			UEXT5
+#define LED_GREEN			UEXT3
+
+#define ALARM_ARM_INPUT  	OLIMEX_BUT_PIN
+#define ALARM_STATE_INPUT   39
+#define DOOR_BELL_INPUT		UEXT4
+//#define ALARM_MOTION_INPUT
+#define ALARM_ARM_RELAY     OLIMEX_REL2_PIN
+#define ALARM_DISARM_RELAY  OLIMEX_REL1_PIN
+#define DOOR_STRIKE_RELAY 	12
+
+#define GPIO_INPUT_PIN_SEL  ((1ULL<<ALARM_STATE_INPUT) | (1ULL<<DOOR_BELL_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
+#define GPIO_INPUT2_PIN_SEL  ((1ULL<<ALARM_ARM_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ALARM_ARM_RELAY)  | (1ULL<< ALARM_DISARM_RELAY)  | (1ULL<< DOOR_STRIKE_RELAY) )
+#define GPIO_OUTPUT_LED_PIN_SEL  ((1ULL<< LED_RED) | (1ULL<< LED_YELLOW) | (1ULL<< LED_GREEN))
+//#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
@@ -96,12 +140,12 @@ long long int power_on_time;
 long long int current_detected_time;
 
 Reader card_reader;
-Light red_light((gpio_num_t)17);
-Light yellow_light((gpio_num_t)18);
-Light green_light((gpio_num_t)19);
-Light machine_power((gpio_num_t)33);
-Light disarm_alarm((gpio_num_t)25);
-Switch power_switch((gpio_num_t)32);
+//Light red_light((gpio_num_t)17);
+//Light yellow_light((gpio_num_t)18);
+//Light green_light((gpio_num_t)19);
+//Light machine_power((gpio_num_t)33);
+//Light disarm_alarm((gpio_num_t)25);
+//Switch power_switch((gpio_num_t)32);
 
 // static const char *REQUEST = "POST " AUTH_ENDPOINT "?email=" CONFIG_USERNAME    "&password=" CONFIG_PASSWORD "\r\n"
 //     "Host: " WEB_SERVER "\r\n"
