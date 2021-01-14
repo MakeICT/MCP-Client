@@ -435,6 +435,7 @@ static void led_handler_task(void* arg)
     			break;
     		case STATE_WAIT_CARD:
         	    if(alarm_active==1){
+            	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
           		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
         		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
         		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
@@ -524,8 +525,8 @@ static void led_handler_task(void* arg)
     	lastAlarmState=alarm_active;
     	lastState = state;
 
-    	sleepcount+=50;
-    	vTaskDelay(50 / portTICK_RATE_MS);
+    	sleepcount+=25;
+    	vTaskDelay(25 / portTICK_RATE_MS);
 
     }
 }
@@ -1045,7 +1046,7 @@ void app_main()
         	  }
           }
 
-          esp_task_wdt_reset(); //reset task watchdog
+//          esp_task_wdt_reset(); //reset task watchdog
         }
 
         gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
