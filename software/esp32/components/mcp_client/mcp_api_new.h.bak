@@ -89,6 +89,7 @@ typedef struct {
 
 static void http_api_task(void *pvParameters)
 {
+
     api_call_data_t data = *(api_call_data_t*) pvParameters;
     esp_err_t err = ESP_OK;
 

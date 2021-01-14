@@ -201,7 +201,7 @@ void MFRC522::PCD_Init() {
 			ESP32CPP::GPIO::setOutput((gpio_num_t)_resetPowerDownPin);
 			ESP32CPP::GPIO::high((gpio_num_t)_resetPowerDownPin);		// Exit power down mode. This triggers a hard reset.
 			// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-			sleep(50);
+			vTaskDelay(50 / portTICK_RATE_MS);
 
 			hardReset = true;
 		}
@@ -251,7 +251,7 @@ void MFRC522::PCD_Reset() {
 	// The datasheet does not mention how long the SoftRest command takes to complete.
 	// But the MFRC522 might have been in soft power-down mode (triggered by bit 4 of CommandReg)
 	// Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74μs. Let us be generous: 50ms.
-	sleep(50);
+	vTaskDelay(50 / portTICK_RATE_MS);
 
 	// Wait for the PowerDown bit in CommandReg to be cleared
 	while (PCD_ReadRegister(CommandReg) & (1<<4)) {
