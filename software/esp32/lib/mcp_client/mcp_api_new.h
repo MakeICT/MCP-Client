@@ -215,8 +215,8 @@ char* api_call(const char* endpoint, char* payload) {
     return NULL;
 }
 
-bool authenticate_nfc(char* nfc_id) {
-    bool status = false;
+int authenticate_nfc(char* nfc_id) {
+	int status = 0;
 
     char format[] = "clients/%d/verify/%s";
     char payload[] = "{}";
@@ -230,7 +230,7 @@ bool authenticate_nfc(char* nfc_id) {
 
     if(data==0){
         ESP_LOGE(API_TAG, "ERROR");
-    	return status;
+    	return -1;
     }
 
     if(data)  {
@@ -238,7 +238,7 @@ bool authenticate_nfc(char* nfc_id) {
 
         char *authorized = cJSON_GetObjectItem(root, "authorized")->valuestring;
         if(strcmp(authorized, "true") == 0) {
-            status = true;
+            status = 1;
             ESP_LOGI(API_TAG, "Card Accepted!");
         } 
         else {
