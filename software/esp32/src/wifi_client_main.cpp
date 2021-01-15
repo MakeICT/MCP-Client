@@ -775,10 +775,18 @@ struct rb_tree * loadCache(){
 }
 
 
-
-
 bool check_card(char* nfc_id) {
-  return authenticate_nfc(nfc_id);
+  int tmp = -1;
+  int count=0;
+  do{
+	  count++;
+	  tmp = authenticate_nfc(nfc_id);
+	  if(tmp==-1){
+		  ESP_LOGE(TAG,"Webcall failed retry %d !!!",count);
+	  }
+  }while(tmp==-1 && count<10);
+
+  return tmp==1;
 }
     
 
