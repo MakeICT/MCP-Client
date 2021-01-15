@@ -147,6 +147,7 @@ static int s_retry_num = 0;
 #define ALARM_DISARM_RELAY  OLIMEX_REL1_PIN
 #define DOOR_STRIKE_RELAY 	12
 
+#define GPIO_INPUT_PIN_ALRM  ((1ULL<<ALARM_STATE_INPUT) | (1ULL<<DOOR_BELL_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
 #define GPIO_INPUT_PIN_SEL  ((1ULL<<ALARM_STATE_INPUT) | (1ULL<<DOOR_BELL_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
 #define GPIO_INPUT2_PIN_SEL  ((1ULL<<ALARM_ARM_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ALARM_ARM_RELAY)  | (1ULL<< ALARM_DISARM_RELAY)  | (1ULL<< DOOR_STRIKE_RELAY) )
@@ -293,12 +294,12 @@ static void gpio_task_io_handler(void* arg)
 
 //            printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level((gpio_num_t)io_num));
             if(io_num == ALARM_STATE_INPUT){
-            	if(pvalue==0 && alarm_active ==0){
-            		printf("Alarm on\n");
-            		alarm_active = 1;
-            	}if(pvalue==1 && alarm_active ==1){
+            	if(pvalue==1 && alarm_active ==1){
             		printf("Alarm off\n");
             		alarm_active = 0;
+            	}if(pvalue==0 && alarm_active ==0){
+            		printf("Alarm on\n");
+            		alarm_active = 1;
 //            	}else{
 //            		printf("no change skipping\n");
             	}
@@ -367,10 +368,12 @@ static void led_handler_task(void* arg)
 	static int blinkOff=750;
 	static int lastState=-1;
 	static int sleepcount=0;
+	static int lastAlarmState=alarm_active;
+
     for(;;) {
 //		printf("%d:%d,",state, lastState);
 
-    	if(state!=lastState){
+    	if(state!=lastState|| lastAlarmState!=alarm_active){
     		printf("Changing state from %d to %d (%d)\n",lastState, state,call_count);
 
 
@@ -535,11 +538,11 @@ static void led_handler_task(void* arg)
 
     		}
     	}
-
+    	lastAlarmState=alarm_active;
     	lastState = state;
 
-    	sleepcount+=25;
-    	vTaskDelay(25 / portTICK_RATE_MS);
+    	sleepcount+=50;
+    	vTaskDelay(50 / portTICK_RATE_MS);
 
     }
 }
@@ -639,7 +642,7 @@ void init(void)
     io_conf2.pin_bit_mask = GPIO_INPUT_PIN_SEL;
     io_conf2.mode = GPIO_MODE_INPUT;
     io_conf2.pull_down_en = (gpio_pulldown_t) 0;
-    io_conf2.pull_up_en = (gpio_pullup_t)1;
+    io_conf2.pull_up_en = (gpio_pullup_t)0;
     gpio_config(&io_conf2);
 
 
@@ -996,6 +999,13 @@ void app_main()
 //          ESP_LOGI(TAG, "debug 15");
           //bool needsalarmcode=0;
           if(unlockdoor){
+        	  int pvalue=gpio_get_level((gpio_num_t)ALARM_STATE_INPUT);
+        	  if(pvalue==0 && alarm_active ==0){
+              		printf("Alarm on\n");
+              		alarm_active = 1;
+        	  }
+
+
         	  state = STATE_UNLOCKING_DOOR;
         	  arm_state_needed=-1;
         	  arm_cycle_count=0;
@@ -1003,17 +1013,18 @@ void app_main()
         	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
               vTaskDelay( CONFIG_DOOR_DELAY / portTICK_PERIOD_MS);
         	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
+			  vTaskDelay(500 / portTICK_PERIOD_MS);
 
         	  ESP_LOGI(TAG, "Checking alarm state.");
         	  int retryCount=1;
 
         	  while(alarm_active==1 && arm_state_needed<1 && retryCount<=10){ //5 second wait to disarm.
+				  ESP_LOGI(TAG, "Waiting for disarm");
         		  if(retryCount%2==0){
                 	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
                       vTaskDelay( 500 / portTICK_PERIOD_MS);
                 	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
         		  }
-        		  ESP_LOGI(TAG, "Waiting for disarm");
         		  vTaskDelay(500 / portTICK_PERIOD_MS);
         		  //FIXME: add timeout waiting for door.
         		  retryCount++;
