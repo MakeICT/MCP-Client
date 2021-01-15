@@ -50,10 +50,13 @@
 #include <reader.h>
 #include "sdkconfig.h"
 
+#define AUDIO_PIN           UEXT5
 #define LED_PIN				UEXT3
+
 
 extern "C" {
 	#include "../mcp_client/rb_tree.h"
+	#include "../mcp_client/audio.h"
 	#include "../mcp_client/ws2812_control.h"
 }
 
@@ -148,6 +151,18 @@ static int s_retry_num = 0;
 #define GPIO_INPUT2_PIN_SEL  ((1ULL<<ALARM_ARM_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ALARM_ARM_RELAY)  | (1ULL<< ALARM_DISARM_RELAY)  | (1ULL<< DOOR_STRIKE_RELAY) )
 //#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
+
+
+
+int notes_scale[] = {48,50,52,53,55,57,59,60};
+int dur_scale []  = {21,21,21,21,21,21,21,12};
+
+int notes_fanfare[] = {34,34,32,34,38,40,38,40,43};
+int dur_fanfare []  = {21,07,07,07,21,07,07,07,42};
+
+int notes_hb[] = {54,54,56,54,59,58,00, 54,54,56,54,61,59,00, 54,54,66,63,59,58,56,00, 64,64,63,59,61,59};
+int dur_hb []  = {14,06,20,20,20,20,20, 14,06,20,20,20,20,20, 14,06,20,20,20,20,40,10, 14,06,20,20,23,17};
+
 
 struct BADGEINFO
 {
@@ -596,6 +611,8 @@ void init(void)
 
     ESP_LOGI(TAG,"Setting up pins");
 
+    init_audio();
+
     ws2812_control_init();
 
 
@@ -908,6 +925,9 @@ void app_main()
 //	            power_on_time = esp_timer_get_time();
 //	            current_detected_time = esp_timer_get_time();
 	            ESP_LOGI(TAG, "Card Authorized");
+
+	        	playTune(8,notes_scale,dur_scale);
+
 	            unlockdoor=1;
 	          }else { // show deny
 	        	  state = STATE_CARD_REJECT;
