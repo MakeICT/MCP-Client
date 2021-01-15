@@ -50,9 +50,11 @@
 #include <reader.h>
 #include "sdkconfig.h"
 
+#define LED_PIN				UEXT3
 
 extern "C" {
 	#include "../mcp_client/rb_tree.h"
+	#include "../mcp_client/ws2812_control.h"
 }
 
 
@@ -127,9 +129,12 @@ static int s_retry_num = 0;
 #define UEXT9				14
 #define UEXT10				17
 
-#define LED_RED				UEXT6
-#define LED_YELLOW			UEXT5
-#define LED_GREEN			UEXT3
+
+#define LED_OUTSIDE_0		2
+#define LED_OUTSIDE_1		1
+#define LED_OUTSIDE_2		0
+#define LED_INSIDE_0		3
+
 
 #define ALARM_ARM_INPUT  	OLIMEX_BUT_PIN
 #define ALARM_STATE_INPUT   39
@@ -142,7 +147,6 @@ static int s_retry_num = 0;
 #define GPIO_INPUT_PIN_SEL  ((1ULL<<ALARM_STATE_INPUT) | (1ULL<<DOOR_BELL_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
 #define GPIO_INPUT2_PIN_SEL  ((1ULL<<ALARM_ARM_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ALARM_ARM_RELAY)  | (1ULL<< ALARM_DISARM_RELAY)  | (1ULL<< DOOR_STRIKE_RELAY) )
-#define GPIO_OUTPUT_LED_PIN_SEL  ((1ULL<< LED_RED) | (1ULL<< LED_YELLOW) | (1ULL<< LED_GREEN))
 //#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
 
 struct BADGEINFO
@@ -231,6 +235,7 @@ int  arm_state_needed = 0;
 bool motion    = 0;
 int  arm_cycle_count = 0;
 TickType_t motion_timeout = 0;
+struct led_state new_state;
 
 static xQueueHandle gpio_evt_queue = NULL;
 
@@ -353,9 +358,13 @@ static void led_handler_task(void* arg)
     	if(state!=lastState){
     		printf("Changing state from %d to %d (%d)\n",lastState, state,call_count);
 
-    	    gpio_set_level((gpio_num_t)LED_RED, 0);
-    	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
-    	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
+
+
+    	    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+    	    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+    	    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+    	    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+    	    ws2812_write_leds(new_state);
 
     		blink=0;
     		sleepcount=0;
@@ -376,9 +385,12 @@ static void led_handler_task(void* arg)
     			blinkOff=250;
     			break;
     		case STATE_CARD_REJECT:
-        	    gpio_set_level((gpio_num_t)LED_RED, 1);
-        	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+        	    new_state.leds[LED_OUTSIDE_0] = LED_RED;
+        	    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        	    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        	    new_state.leds[LED_INSIDE_0]  = LED_RED;
+        	    ws2812_write_leds(new_state);
+
         	    vTaskDelay(1500 / portTICK_RATE_MS);
     			break;
     		case STATE_WAIT_CARD:
@@ -405,39 +417,106 @@ static void led_handler_task(void* arg)
 
     		switch(state){
     		case STATE_SYSTEM_START:
-        	    gpio_set_level((gpio_num_t)LED_RED, 0);
-        	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, blink);
+    			if(blink){
+        		    new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_YELLOW;
+    			}else{
+        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+    			}
+
+    		    ws2812_write_leds(new_state);
+
     			break;
     		case STATE_WAIT_CARD:
-        	    gpio_set_level((gpio_num_t)LED_RED, 0);
-        	    gpio_set_level((gpio_num_t)LED_GREEN, blink);
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, 1);
+        	    if(alarm_active==1){
+          		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+            	    
+        	    }else{
+    			if(blink){
+        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+    			}else{
+        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_GREEN;
+    			}
+        	    }
+
+
+
+    		    ws2812_write_leds(new_state);
+
     			break;
     		case STATE_AUTHORIZING:
-        		gpio_set_level((gpio_num_t)LED_RED, blink);
-        	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    			if(blink){
+        		    new_state.leds[LED_OUTSIDE_0] = LED_RED;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_RED;
+    			}else{
+        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+    			}
+
+    		    ws2812_write_leds(new_state);
     			break;
     		case STATE_UNLOCKING_DOOR:
-        		if(blink){
-            	    gpio_set_level((gpio_num_t)LED_RED, 1);
-            	    gpio_set_level((gpio_num_t)LED_GREEN, 0);
-        		}else{
-            	    gpio_set_level((gpio_num_t)LED_RED, 0);
-            	    gpio_set_level((gpio_num_t)LED_GREEN, 1);
-        		}
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+
+    			if(blink){
+        		    new_state.leds[LED_OUTSIDE_0] = LED_RED;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_RED;
+    			}else{
+        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_GREEN;
+    			}
+
+    		    ws2812_write_leds(new_state);
+
     			break;
     		case STATE_UNLOCKED_DOOR:
-            	gpio_set_level((gpio_num_t)LED_RED, 0);
-            	gpio_set_level((gpio_num_t)LED_GREEN, 1);
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
+    		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+    		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
+    		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+    		    new_state.leds[LED_INSIDE_0]  = LED_GREEN;
+
+    		    ws2812_write_leds(new_state);
+
     			break;
     		default:
-            	gpio_set_level((gpio_num_t)LED_RED, blink);
-            	gpio_set_level((gpio_num_t)LED_GREEN, blink);
-        	    gpio_set_level((gpio_num_t)LED_YELLOW, blink);
+    			if(blink){
+        		    new_state.leds[LED_OUTSIDE_0] = LED_RED;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_YELLOW;
+        		    new_state.leds[LED_INSIDE_0]  = LED_ORANGE;
+
+    			}else{
+        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+
+    			}
+
+
+    		    ws2812_write_leds(new_state);
+
 
     		}
     	}
@@ -517,9 +596,18 @@ void init(void)
 
     ESP_LOGI(TAG,"Setting up pins");
 
+    ws2812_control_init();
+
+
+
+    new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
+    new_state.leds[LED_OUTSIDE_1] = LED_RED;
+    new_state.leds[LED_OUTSIDE_2] = LED_BLUE;
+    new_state.leds[LED_INSIDE_0] = LED_GREEN;
+    ws2812_write_leds(new_state);
+
     gpio_config_t io_conf;
     gpio_config_t io_conf2;
-    gpio_config_t io_conf3;
     gpio_config_t io_conf4;
 
 
@@ -536,15 +624,6 @@ void init(void)
     io_conf2.pull_down_en = (gpio_pulldown_t) 0;
     io_conf2.pull_up_en = (gpio_pullup_t)1;
     gpio_config(&io_conf2);
-
-
-
-    io_conf3.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;
-    io_conf3.mode = GPIO_MODE_OUTPUT;
-    io_conf3.pin_bit_mask = GPIO_OUTPUT_LED_PIN_SEL;
-    io_conf3.pull_down_en = (gpio_pulldown_t)1;
-    io_conf3.pull_up_en = (gpio_pullup_t)0;
-    gpio_config(&io_conf3);
 
 
 
@@ -578,10 +657,13 @@ void init(void)
     gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
     gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
 
-    gpio_set_level((gpio_num_t)LED_RED, 0);
-    gpio_set_level((gpio_num_t)LED_YELLOW, 0);
-    gpio_set_level((gpio_num_t)LED_GREEN, 0);
 
+
+    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+    ws2812_write_leds(new_state);
 
 //    gpio_pad_select_gpio((gpio_num_t)ALARM_STATE_INPUT);
 //    gpio_set_direction((gpio_num_t)ALARM_STATE_INPUT, GPIO_MODE_INPUT);
