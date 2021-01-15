@@ -227,4 +227,15 @@ bool authenticate_nfc(char* nfc_id) {
     return status;
 }
 
+void deauthorize() {
+    char format[] = "clients/%d/deauthorize";
+    char payload[] = "{}";
+    uint8_t endpoint_length = sizeof(char) * (strlen(format) + 3);
+    // ESP_LOGI(API_TAG, "endpoint length: %d", endpoint_length);
+    char* endpoint = (char*) malloc(endpoint_length);
+
+    sprintf(endpoint, format, client_id);
+    char* data = api_call(endpoint, payload); 
+}
+
 #endif

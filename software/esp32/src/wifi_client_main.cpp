@@ -216,6 +216,7 @@ void app_main()
         yellow_light.off();
         green_light.off();
         red_light.off();
+        deauthorize();
         // post_log(CLIENT_TAG "Power+Off","", "","");
       }
       else if(power_switch.state() && !state) {
