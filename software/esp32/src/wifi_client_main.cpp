@@ -1052,7 +1052,7 @@ void app_main()
 
         	  if(alarm_active){
         		  ESP_LOGI(TAG, "Failed to disarm Alarm.");
-        		  state = STATE_UNLOCKED_DOOR;
+        		//   state = STATE_UNLOCKED_DOOR;
         	  }else{
             	  if(arm_state_needed>0){
             		  ESP_LOGI(TAG, "Arming alarm cancel unlock");
