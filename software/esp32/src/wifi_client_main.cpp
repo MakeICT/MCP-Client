@@ -748,7 +748,7 @@ void init(void)
     card_reader.init();
     ESP_LOGI(TAG,"init nfc reader finished");
 
-    state = -1;
+    // state = -1;
 }
     
 
