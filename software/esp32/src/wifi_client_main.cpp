@@ -288,11 +288,11 @@ static void gpio_task_io_handler(void* arg)
 {
     uint32_t io_num=99999;
     for(;;) {
-    	vTaskDelay(100 / portTICK_RATE_MS);
+    	// vTaskDelay(100 / portTICK_RATE_MS);
     	if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
     		pvalue=gpio_get_level((gpio_num_t)io_num);
 
-//            printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level((gpio_num_t)io_num));
+           	printf("GPIO[%d] intr, val: %d\n", io_num, pvalue);
             if(io_num == ALARM_STATE_INPUT){
             	if(pvalue==1 && alarm_active ==1){
             		printf("Alarm off\n");
@@ -737,6 +737,10 @@ void init(void)
     ESP_ERROR_CHECK( nvs_flash_init() );
     ESP_LOGI(TAG,"debug wifi ");
     initialise_wifi();
+	// disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
+	// https://github.com/espressif/esp-idf/issues/1096
+	// https://github.com/espressif/esp-idf/issues/4585
+	ESP_ERROR_CHECK( esp_wifi_set_ps(WIFI_PS_NONE));
     ESP_LOGI(TAG,"debug wifi ");
     //    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,false, true, portMAX_DELAY);
 
