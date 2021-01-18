@@ -950,8 +950,9 @@ void app_main()
 	            unlockdoor=1;
 	          }else { // show deny
 	        	  state = STATE_CARD_REJECT;
-	              ESP_LOGI(TAG, "Card Unuthorized");
+	              ESP_LOGI(TAG, "Card Unauthorized");
 	              unlockdoor=0;
+				  vTaskDelay(3000 / portTICK_PERIOD_MS);
 	          }
           }else{
 			  ESP_LOGI(TAG, "Wifi AP connection down.");
