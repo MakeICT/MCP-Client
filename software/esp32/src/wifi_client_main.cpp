@@ -947,7 +947,7 @@ void app_main()
 //	            current_detected_time = esp_timer_get_time();
 	            ESP_LOGI(TAG, "Card Authorized");
 
-	        	playTune(8,notes_scale,dur_scale);
+	        	// playTune(8,notes_scale,dur_scale);
 
 	            unlockdoor=1;
 	          }else { // show deny
