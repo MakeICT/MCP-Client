@@ -1029,10 +1029,11 @@ void app_main()
         	  arm_state_needed=-1;
         	  arm_cycle_count=0;
 
+			//   TODO: why is this here?
         	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
-              vTaskDelay( CONFIG_DOOR_DELAY / portTICK_PERIOD_MS);
+              vTaskDelay(500 / portTICK_PERIOD_MS);
         	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
-			  vTaskDelay(500 / portTICK_PERIOD_MS);
+			  vTaskDelay(CONFIG_DOOR_DELAY / portTICK_PERIOD_MS);
 
         	  ESP_LOGI(TAG, "Checking alarm state.");
         	  int retryCount=1;
@@ -1044,7 +1045,7 @@ void app_main()
                       vTaskDelay( 500 / portTICK_PERIOD_MS);
                 	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
         		  }
-        		  vTaskDelay(500 / portTICK_PERIOD_MS);
+        		  vTaskDelay(CONFIG_DOOR_DELAY / portTICK_PERIOD_MS);
         		  //FIXME: add timeout waiting for door.
         		  retryCount++;
         	  }
