@@ -909,6 +909,8 @@ void app_main()
 
     bool unlockdoor=0;
 
+	while(!(xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT));
+
 
     ESP_LOGI(TAG, "Starting loop");
 
