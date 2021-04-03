@@ -47,6 +47,7 @@
 
 // #include "utils.h"
 #include "../mcp_client/mcp_api_new.h"
+#include "mcp_network.h"
 #include <reader.h>
 #include "sdkconfig.h"
 
@@ -78,7 +79,6 @@ extern "C" {
 #define WIFI_FAIL_BIT      BIT1
 
 
-static int s_retry_num = 0;
 
 /* The examples use simple WiFi configuration that you can set via
    'make menuconfig'.
@@ -197,16 +197,6 @@ extern int badge_compare_callback (struct rb_tree *self, struct rb_node *node_a,
 //    .led_strip_length = LED_STRIP_LENGTH
 //};
 
-
-
-/* FreeRTOS event group to signal when we are connected & ready to make a request */
-static EventGroupHandle_t wifi_event_group;
-
-/* The event group allows multiple bits for each event,
-   but we only care about one event - are we connected
-   to the AP with an IP? */
-const int CONNECTED_BIT = BIT0;
-
 /* Constants that aren't configurable in menuconfig */
 // #define WEB_SERVER "security.makeict.org"
 // #define WEB_SERVER "securitytest.makeict.org:4443"
@@ -254,6 +244,7 @@ TickType_t motion_timeout = 0;
 struct led_state new_state;
 
 static xQueueHandle gpio_evt_queue = NULL;
+Network network = Network();
 
 /* Letsencrypt root cert, taken from server_root_cert.pem
 
@@ -566,40 +557,6 @@ static void led_handler_task(void* arg)
     }
 }
     
-static esp_err_t event_handler(void *ctx, system_event_t *event)
-{
-    switch(event->event_id) {
-    case SYSTEM_EVENT_STA_START:
-        esp_wifi_connect();
-        break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-        break;
-    case SYSTEM_EVENT_STA_DISCONNECTED:
-        /* This is a workaround as ESP32 WiFi libs don't currently
-           auto-reassociate. */
-
-		if (s_retry_num < ESP_MAXIMUM_RETRY) {
-			esp_wifi_connect();
-			s_retry_num++;
-			ESP_LOGI(TAG, "retry to connect to the AP");
-	        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
-		} else {
-			//			xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-			ESP_LOGI(TAG, "failed to connect, sleeping 5 minutes");
-			vTaskDelay(300000 / portTICK_PERIOD_MS);
-			esp_wifi_connect();
-			s_retry_num=0;
-
-		}
-
-        break;
-    default:
-        break;
-    }
-    return ESP_OK;
-}
-
 int check_current() {
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(ADC1_CHANNEL_7,ADC_ATTEN_DB_0);
@@ -607,26 +564,6 @@ int check_current() {
     // printf("%d\n", val);
     return val;
 }
-
-static void initialise_wifi(void)
-{
-    tcpip_adapter_init();
-    wifi_event_group = xEventGroupCreate();
-    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-
-    wifi_config_t wifi_config = {};
-    strcpy((char*) wifi_config.sta.ssid, (char*) WIFI_SSID);
-    strcpy((char*) wifi_config.sta.password, (char*) WIFI_PASS);
-
-    ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
-    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
-    ESP_ERROR_CHECK( esp_wifi_start() );
-}
-
 
 void init(void)
 {
@@ -736,11 +673,17 @@ void init(void)
     ESP_ERROR_CHECK(ret);
     ESP_ERROR_CHECK( nvs_flash_init() );
     ESP_LOGI(TAG,"debug wifi ");
-    initialise_wifi();
+
+	// network.setup(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+	network.setup();
+	network.init();
+	network.start();
+
+
 	// disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
 	// https://github.com/espressif/esp-idf/issues/1096
 	// https://github.com/espressif/esp-idf/issues/4585
-	ESP_ERROR_CHECK( esp_wifi_set_ps(WIFI_PS_NONE));
+	// ESP_ERROR_CHECK( esp_wifi_set_ps(WIFI_PS_NONE));
     ESP_LOGI(TAG,"debug wifi ");
     //    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,false, true, portMAX_DELAY);
 
@@ -828,30 +771,6 @@ bool check_card(char* nfc_id) {
 
   return tmp==1;
 }
-    
-
-//static void event_handler(void* arg, esp_event_base_t event_base,
-//                                int32_t event_id, void* event_data)
-//{
-//    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
-//        esp_wifi_connect();
-//    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-//        if (s_retry_num < ESP_MAXIMUM_RETRY) {
-//            esp_wifi_connect();
-//            s_retry_num++;
-//            ESP_LOGI(TAG, "retry to connect to the AP");
-//        } else {
-//            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-//        }
-//        ESP_LOGI(TAG,"connect to the AP fail");
-//    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-//        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-//        ESP_LOGI(TAG, "got ip:%s",
-//                 ip4addr_ntoa(&event->ip_info.ip));
-//        s_retry_num = 0;
-//        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-//    }
-//}
 
 //static const char *ATAG = "alarm_comm";
 
@@ -913,9 +832,6 @@ void app_main()
 
     bool unlockdoor=0;
 
-	while(!(xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT));
-
-
     ESP_LOGI(TAG, "Starting loop");
 
     while(1) {
@@ -939,8 +855,8 @@ void app_main()
           state = STATE_AUTHORIZING;
           sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
           ESP_LOGI(TAG, "Read card UID: %s", uid_string);
-          if( xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT ){
-			  ESP_LOGI(TAG, "Connected to AP");
+          if( network.isConnected() ){
+			  ESP_LOGI(TAG, "Network is connected");
 			  // authenticate_with_contact_credentials();
 			  // xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
 
@@ -961,9 +877,9 @@ void app_main()
 				  vTaskDelay(3000 / portTICK_PERIOD_MS);
 	          }
           }else{
-			  ESP_LOGI(TAG, "Wifi AP connection down.");
+			  ESP_LOGI(TAG, "Network connection down.");
 
-
+				network.restart();
           }
 
           if (tree) {
