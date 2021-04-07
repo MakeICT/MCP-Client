@@ -679,6 +679,7 @@ void init(void)
 	network.init();
 	network.start();
 
+	xTaskCreate(&http_api_task, "http_api_task", 8192, NULL, 5, NULL);
 
 	// disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
 	// https://github.com/espressif/esp-idf/issues/1096
