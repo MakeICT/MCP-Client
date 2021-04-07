@@ -42,37 +42,53 @@ static const char *API_TAG = "MCP_API";
 
 int client_id = CLIENT_TAG;
 
+QueueHandle_t request_queue;
 QueueHandle_t response_queue;
+
+char* end_flag = "[[[HTTP_END]]]";
 
 esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) {
         case HTTP_EVENT_ERROR:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_ERROR");
+            ESP_LOGD(API_TAG, "HTTP_EVENT_ERROR");
             break;
         case HTTP_EVENT_ON_CONNECTED:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_ON_CONNECTED");
+            ESP_LOGD(API_TAG, "HTTP_EVENT_ON_CONNECTED");
             break;
         case HTTP_EVENT_HEADER_SENT:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_HEADER_SENT");
+            ESP_LOGD(API_TAG, "HTTP_EVENT_HEADER_SENT");
             break;
         case HTTP_EVENT_ON_HEADER:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_ON_HEADER");
-            printf("!%.*s", evt->data_len, (char*)evt->data);
+            ESP_LOGD(API_TAG, "HTTP_EVENT_ON_HEADER");
+            printf("%.*s", evt->data_len, (char*)evt->data);
             break;
-        case HTTP_EVENT_ON_DATA:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+        case HTTP_EVENT_ON_DATA: {
+            ESP_LOGD(API_TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
             // if (!esp_http_client_is_chunked_response(evt->client)) {
             //     printf("%.*s", evt->data_len, (char*)evt->data);
             // }
-                printf("%.*s\n", evt->data_len, (char*)evt->data);
+            // printf("%.*s\n", evt->data_len, (char*)evt->data);
+            char* data = (char*) pvPortMalloc(evt->data_len + 1);
+            // esp_http_client_read(client, data, content_length);
+            strncpy(data, (char*) evt->data, evt->data_len);
+            data[evt->data_len] = '\0';
+            xQueueSend(response_queue, (void*) &data, (TickType_t) 0);
 
             break;
-        case HTTP_EVENT_ON_FINISH:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_ON_FINISH");
-            break;
+        }
+        case HTTP_EVENT_ON_FINISH: {
+            ESP_LOGD(API_TAG, "HTTP_EVENT_ON_FINISH");
+        
+            char* data = (char*) pvPortMalloc(strlen(end_flag) + 1);
+            // esp_http_client_read(client, data, content_length);
+            strncpy(data, end_flag, strlen(end_flag));
+            data[strlen(end_flag)] = '\0';
+            xQueueSend(response_queue, (void*) &data, (TickType_t) 0);
+        }
+        
         case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI(API_TAG, "HTTP_EVENT_DISCONNECTED");
+            ESP_LOGD(API_TAG, "HTTP_EVENT_DISCONNECTED");
             break;
 
         default:
@@ -82,106 +98,150 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
 }
 
 typedef struct {
-    char endpoint[64] = {'\0'};
-    char post_data[300] = {'\0'};
+    esp_http_client_method_t method = HTTP_METHOD_GET;
+    char endpoint[32] = {'\0'};
+    char post_data[500] = {'\0'};
+    char *response;
+    SemaphoreHandle_t complete;
 } api_call_data_t;
+
 
 static void http_api_task(void *pvParameters)
 {
-    api_call_data_t data = *(api_call_data_t*) pvParameters;
-    esp_err_t err = ESP_OK;
+    response_queue = xQueueCreate(10, sizeof(char*));
+    request_queue = xQueueCreate(10, sizeof(api_call_data_t*));
+    
+    while(1) {
+        api_call_data_t *data;
+        xQueueReceive(request_queue, &data, portMAX_DELAY);
 
-    	char* url;
+        static int retry_delay;
+        retry_delay = 500;
+        uint8_t attempt = 1;
+        bool success = false;
+
+        while(!success) {
+            // client_init();
+            esp_http_client_handle_t client;
+            
+            esp_http_client_config_t config = {
+            };
+
+            config.event_handler = _http_event_handle;
+            // config.cert_pem = server_root_cert_pem;
+            config.url = CONFIG_SERVER;
+            config.buffer_size = 10240;
+            config.timeout_ms = 1000;
+
+
+            client = esp_http_client_init(&config);
+            // esp_http_client_set_header(client, "Connection", "keep-alive");
+
+            char* url{ new char[strlen(data->endpoint) + strlen(CONFIG_SERVER "/api/") + 1]{'\0'}};
+            sprintf(url, "%s/api/%s", CONFIG_SERVER, data->endpoint);
+
+            if (url != NULL) ESP_LOGI(API_TAG, "URL = %s", url);
+            if (client == NULL) ESP_LOGE(API_TAG, " << NULL CLIENT! >>");
+
+            esp_http_client_set_url(client, url);
+            // ESP_LOGI(API_TAG, "STRING LENGTH: %d : %s", strlen(data.endpoint) + strlen(CONFIG_SERVER "/api/") + 1, url);
+
+            esp_http_client_set_method(client, data->method);
+            esp_http_client_set_header(client, "Content-Type", "application/json");
+            esp_http_client_set_post_field(client, data->post_data, strlen(data->post_data));
+
+            if (attempt > 1) {
+                ESP_LOGW(API_TAG, "attempt: %d\n", attempt);
+            }
+            else {
+                ESP_LOGD(API_TAG, "attempt: %d\n", attempt);
+            }
+            esp_err_t err = esp_http_client_perform(client);
+            // ESP_LOGI(API_TAG, "Length: %d", esp_http_client_read(client, buffer, 2048));
+            // ESP_LOGI(API_TAG, "Content: %s", buffer);
         
-		// client_init();
-		esp_http_client_handle_t client;
+            if (err == ESP_OK) { 
+                char *response, *full_response;
+                uint8_t chunk_count = 0;
+                char* chunks[10];
+                int resp_len = 0;
+                
+                if (esp_http_client_get_status_code(client) != 200)
+                    ESP_LOGD(API_TAG, "Status = %d", esp_http_client_get_status_code(client));
+                else
+                {
+                    ESP_LOGD(API_TAG, "Status = %d, content_length = %d",
+                    esp_http_client_get_status_code(client),
+                    esp_http_client_get_content_length(client));
+                }
+                
+                while(xQueueReceive(response_queue, &response, 10 / portTICK_PERIOD_MS)) {
+                    if(strncmp(response, end_flag, strlen(end_flag)) == 0) {
+                        ESP_LOGD(API_TAG, "Got termination flag\n");
+                        vPortFree(response);
+                        break;
+                    }
+                    chunks[chunk_count] = response;
+                    chunk_count += 1;
+                    resp_len += strlen(response);
+                }
+                if (chunk_count > 0) {
+                    full_response = (char*) calloc(resp_len + 1, sizeof(char));
+                    ESP_LOGD(API_TAG, "API Call Response Length: %d", resp_len);
 
-		esp_http_client_config_t config = {
-		};
+                    for (int i=0; i<chunk_count; i++) {
+                        snprintf(full_response, resp_len + 1, "%s%s", full_response, chunks[i]);
+                        vPortFree(chunks[i]);
+                    }
+                    ESP_LOGI(API_TAG, "API Call Response: %s", full_response);
 
-		config.event_handler = _http_event_handle;
-		// config.cert_pem = server_root_cert_pem;
-		// config.buffer_size = 2048;
-		config.timeout_ms = 2000;
-		// esp_http_client_set_header(client, "Connection", "keep-alive");
+                    data->response = full_response;
+                    xSemaphoreGive(data->complete);
+                    success = true;
+                }
+                else if(chunk_count == 0) {
+                    ESP_LOGE(API_TAG, "No API data received");
+                }
+        
+            }
+            else {
+                ESP_LOGE(API_TAG, "Error %d %s", err, esp_err_to_name(err));
+                if (err == ESP_FAIL)
+                    ESP_LOGE(API_TAG, "ESP_FAIL");
+            }
+            attempt += 1;
+            retry_delay *= 2;
 
-			ESP_LOGI(API_TAG, "primary server");
-    	    url =  new char[strlen(data.endpoint) + strlen(WEB_URL "/api/") + 1]{'\0'};
-			config.url = WEB_URL;
-			sprintf(url, "%s/api/%s", WEB_URL, data.endpoint);
-			ESP_LOGI(API_TAG, "STRING LENGTH: %d : %s", strlen(data.endpoint) + strlen(CONFIG_SERVER "/api/") + 1, url);
+            esp_http_client_close(client);
+            esp_http_client_cleanup(client);
+            xQueueReset(response_queue);
+            delete[] url;
 
-			client = esp_http_client_init(&config);
-			esp_http_client_set_url(client, url);
+            if (attempt == 5) {
+                ESP_LOGE(API_TAG, "Failed to get a response after 5 attempts!");
+                data->response = NULL;
+                xSemaphoreGive(data->complete);
+                break;
+            }
 
-			esp_http_client_set_method(client, HTTP_METHOD_GET);
-			esp_http_client_set_header(client, "Content-Type", "application/json");
-			esp_http_client_set_post_field(client, data.post_data, strlen(data.post_data));
+            vTaskDelay(retry_delay / portTICK_PERIOD_MS);
+        }
+    }
 
-			err = esp_http_client_perform(client);
-	//        char buffer[2048] = {'\0'};
-			// ESP_LOGI(API_TAG, "Length: %d", esp_http_client_read(client, buffer, 2048));
-			// ESP_LOGI(API_TAG, "Content: %s", buffer);
-
-			if (err == ESP_OK) {
-				if (esp_http_client_get_status_code(client) != 200)
-					ESP_LOGI(API_TAG, "Status = %d", esp_http_client_get_status_code(client));
-				else
-				{
-					uint8_t content_length = esp_http_client_get_content_length(client);
-
-					ESP_LOGI(API_TAG, "Status = %d, content_length = %d",
-					esp_http_client_get_status_code(client),
-					esp_http_client_get_content_length(client));
-
-					// char* data = (char*) malloc(content_length) + 1;
-					char* data = (char*) pvPortMalloc(content_length + 1);
-					esp_http_client_read(client, data, content_length);
-					data[content_length] = '\0';
-					ESP_LOGI(API_TAG, "Data: %s", data);
-
-					xQueueSend(response_queue, (void*) &data, (TickType_t) 0);
-				}
-			}
-			else {
-				ESP_LOGE(API_TAG, "Error %d %s", err, esp_err_to_name(err));
-				if (err == ESP_FAIL){
-					ESP_LOGE(API_TAG, "ESP_FAIL");
-				}
-//					vTaskDelay(100 / portTICK_PERIOD_MS);
-
-				char* data = (char*) pvPortMalloc(6);
-				data[0] = 'E';
-				data[1] = 'R';
-				data[2] = 'R';
-				data[3] = 'O';
-				data[4] = 'R';
-				data[5] = '\0';
-
-				xQueueSend(response_queue, (void*) &data , (TickType_t) 0);
-
-			}
-			esp_http_client_close(client);
-			esp_http_client_cleanup(client);
-
-			delete[] url;
-
-	free(pvParameters);
     vTaskDelete(NULL);
 }
-
 
 char* api_call(const char* endpoint, char* payload) {
     // char signature[65] = {'\0'};
     // calculate_hmac(CONFIG_SECRET_KEY, payload, signature);
-    char* response;
-    api_call_data_t* data;
 
-    data = (api_call_data_t*) malloc(sizeof(api_call_data_t));
+
+    api_call_data_t* data = (api_call_data_t*) malloc(sizeof(api_call_data_t));
 
     // api_call_data_t data;
     strcpy(data->endpoint, endpoint);
     strcpy(data->post_data, payload);
+    data->method = HTTP_METHOD_GET; 
     // if(strlen(payload) < 3)
     //     sprintf(data->post_data, "{\"signature\":\"%s\"}",  signature);
     // else {
@@ -189,31 +249,24 @@ char* api_call(const char* endpoint, char* payload) {
     //     sprintf(data->post_data,
     //         "%s"
     //         "\"signature\":\"%s\"}"
-    //         , payload, signature);
+    //         , payload, signature);    
     // }
+    ESP_LOGI(API_TAG, "API Call Request: /%s, %s", endpoint, data->post_data);
 
-    response_queue = xQueueCreate(1, sizeof(char*));
+    data->complete = xSemaphoreCreateBinary();
 
-    ESP_LOGI(API_TAG, "%s", data->endpoint);
+    xQueueSend(request_queue, (void*) &data, portMAX_DELAY);
 
-    xTaskCreate(&http_api_task, "http_api_task", 8192, (void*) data, 5, NULL);
+    xSemaphoreTake(data->complete, portMAX_DELAY);
 
-    if(xQueueReceive(response_queue, &response, (TickType_t) 2000 )) {
+    char* response = data->response;
+    vSemaphoreDelete(data->complete);
+    ESP_LOGI(API_TAG, "api_call completed or failed\n");
+    // printf("response: %s\n", response);
+    free(data);
 
-    	if (strcmp(response, "ERROR") == 0){
-    		return NULL;
-    	}
-
-    	ESP_LOGI(API_TAG, "API Call Response: %s", response);
-        return response;
-    } else {
-        ESP_LOGI(API_TAG, "API Call did not return in time");
-//        free(data);
-    }
-
-
-    return NULL;
-}
+    return response;
+}   
 
 int authenticate_nfc(char* nfc_id) {
 	int status = 0;
@@ -228,8 +281,8 @@ int authenticate_nfc(char* nfc_id) {
 
     char* data = api_call(endpoint, payload); 
 
-    if(data==0){
-        ESP_LOGE(API_TAG, "ERROR");
+    if(data==NULL){
+        ESP_LOGE(API_TAG, "ERROR authenticating NFC!");
     	return -1;
     }
 
