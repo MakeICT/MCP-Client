@@ -758,21 +758,6 @@ struct rb_tree * loadCache(){
     return tree;
 }
 
-
-bool check_card(char* nfc_id) {
-  int tmp = -1;
-  int count=0;
-  do{
-	  count++;
-	  tmp = authenticate_nfc(nfc_id);
-	  if(tmp==-1){
-		  ESP_LOGE(TAG,"Webcall failed retry %d !!!",count);
-	  }
-  }while(tmp==-1 && count<10);
-
-  return tmp==1;
-}
-
 //static const char *ATAG = "alarm_comm";
 
 //static void alarm_communication_task(void *pvParameters)
@@ -861,7 +846,7 @@ void app_main()
 			  // authenticate_with_contact_credentials();
 			  // xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
 
-	          if (check_card(uid_string)) {
+	          if (authenticate_nfc(uid_string) > 0) {
 	            state = STATE_UNLOCKING_DOOR;
 //	            vTaskDelay(500 / portTICK_PERIOD_MS);
 //	            power_on_time = esp_timer_get_time();
