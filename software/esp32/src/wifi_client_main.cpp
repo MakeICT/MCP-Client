@@ -51,8 +51,6 @@
 #include <reader.h>
 #include "sdkconfig.h"
 
-#define AUDIO_PIN           UEXT5
-#define LED_PIN				UEXT3
 
 
 extern "C" {
@@ -61,31 +59,6 @@ extern "C" {
 	#include "../mcp_client/ws2812_control.h"
 }
 
-
-
-/* The examples use WiFi configuration that you can set via project configuration menu
-
-   If you'd rather not, just change the below entries to strings with
-   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
-*/
-
-/* FreeRTOS event group to signal when we are connected*/
-//static EventGroupHandle_t s_wifi_event_group;
-
-/* The event group allows multiple bits for each event, but we only care about two events:
- * - we are connected to the AP with an IP
- * - we failed to connect after the maximum amount of retries */
-#define WIFI_CONNECTED_BIT BIT0
-#define WIFI_FAIL_BIT      BIT1
-
-
-
-/* The examples use simple WiFi configuration that you can set via
-   'make menuconfig'.
-
-   If you'd rather not, just change the below entries to strings with
-   the config you want - ie #define WIFI_SSID "mywifissid"
-*/
 #define WIFI_SSID CONFIG_WIFI_SSID
 #define WIFI_PASS CONFIG_WIFI_PASSWORD
 #define ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
@@ -138,6 +111,8 @@ extern "C" {
 #define LED_OUTSIDE_2		0
 #define LED_INSIDE_0		3
 
+#define AUDIO_PIN           UEXT5
+#define LED_PIN				UEXT3
 
 #define ALARM_ARM_INPUT  	OLIMEX_BUT_PIN
 #define ALARM_STATE_INPUT   39
@@ -153,7 +128,7 @@ extern "C" {
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ALARM_ARM_RELAY)  | (1ULL<< ALARM_DISARM_RELAY)  | (1ULL<< DOOR_STRIKE_RELAY) )
 //#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
 
-
+static const char *TAG = "wifi_client_main";
 
 int notes_scale[] = {48,50,52,53,55,57,59,60};
 int dur_scale []  = {21,21,21,21,21,21,21,12};
@@ -173,40 +148,12 @@ struct BADGEINFO
     bool needswrite = 0;
 } ;
 
-
 extern int badge_compare_callback (struct rb_tree *self, struct rb_node *node_a, struct rb_node *node_b) {
     BADGEINFO *a = (BADGEINFO *) node_a->value;
     BADGEINFO *b = (BADGEINFO *) node_b->value;
     return strcmp(a->uid_string, b->uid_string);
 }
 
-
-//#define LED_STRIP_LENGTH 3U
-//#define LED_STRIP_RMT_INTR_NUM 19U
-//
-//static struct led_color_t led_strip_buf_1[LED_STRIP_LENGTH];
-//static struct led_color_t led_strip_buf_2[LED_STRIP_LENGTH];
-//
-//struct led_strip_t led_strip = {
-//    .rgb_led_type = RGB_LED_TYPE_WS2812,
-//    .rmt_channel = RMT_CHANNEL_1,
-//    .rmt_interrupt_num = LED_STRIP_RMT_INTR_NUM,
-//    .gpio = GPIO_NUM_16,
-//    .led_strip_buf_1 = led_strip_buf_1,
-//    .led_strip_buf_2 = led_strip_buf_2,
-//    .led_strip_length = LED_STRIP_LENGTH
-//};
-
-/* Constants that aren't configurable in menuconfig */
-// #define WEB_SERVER "security.makeict.org"
-// #define WEB_SERVER "securitytest.makeict.org:4443"
-// #define WEB_URL "https://securitytest.makeict.org:4443"
-
-// #define WEB_SERVER CONFIG_SERVER ":" CONFIG_PORT
-// #define WEB_URL "https://" WEB_SERVER
-// #define AUTH_ENDPOINT WEB_URL "/api/login"
-
-static const char *TAG = "wifi_client_main";
 
 static const short STATE_UNKNOWN 		= 0;
 static const short STATE_SYSTEM_START 	= 1;
@@ -232,9 +179,6 @@ Reader card_reader;
 //Light disarm_alarm((gpio_num_t)25);
 //Switch power_switch((gpio_num_t)32);
 
-/**
- * @brief gpio_isr_handler  Handle button press interrupt
- */
 
 bool alarm_active = 0;
 int  arm_state_needed = 0;
@@ -243,7 +187,6 @@ int  arm_cycle_count = 0;
 TickType_t motion_timeout = 0;
 struct led_state new_state;
 
-static xQueueHandle gpio_evt_queue = NULL;
 Network network = Network();
 
 /* Letsencrypt root cert, taken from server_root_cert.pem
@@ -265,7 +208,11 @@ Network network = Network();
 //     "\r\n";
 
 
+static xQueueHandle gpio_evt_queue = NULL;
 
+/**
+ * @brief gpio_isr_handler  Handle button press interrupt
+ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
 
@@ -565,136 +512,6 @@ int check_current() {
     return val;
 }
 
-void init(void)
-{
-
-    ESP_LOGI(TAG,"Setting up pins");
-
-    ws2812_control_init();
-    xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
-    init_audio();
-
-    // new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
-    // new_state.leds[LED_OUTSIDE_1] = LED_RED;
-    // new_state.leds[LED_OUTSIDE_2] = LED_BLUE;
-    // new_state.leds[LED_INSIDE_0] = LED_GREEN;
-    // ws2812_write_leds(new_state);
-
-    gpio_config_t io_conf;
-    gpio_config_t io_conf2;
-    gpio_config_t io_conf4;
-
-
-    io_conf.intr_type = (gpio_int_type_t)GPIO_INTR_DISABLE;
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
-    io_conf.pull_down_en = (gpio_pulldown_t)1;
-    io_conf.pull_up_en = (gpio_pullup_t)0;
-    gpio_config(&io_conf);
-
-    io_conf2.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
-    io_conf2.pin_bit_mask = GPIO_INPUT_PIN_SEL;
-    io_conf2.mode = GPIO_MODE_INPUT;
-    io_conf2.pull_down_en = (gpio_pulldown_t) 0;
-    io_conf2.pull_up_en = (gpio_pullup_t)0;
-    gpio_config(&io_conf2);
-
-
-
-    io_conf4.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
-    io_conf4.pin_bit_mask = GPIO_INPUT2_PIN_SEL;
-    io_conf4.mode = GPIO_MODE_INPUT;
-    io_conf4.pull_down_en = (gpio_pulldown_t) 1;
-    io_conf4.pull_up_en = (gpio_pullup_t)0;
-    gpio_config(&io_conf4);
-
-
-
-    //change gpio intrrupt type for one pin
-//    gpio_set_intr_type(ALARM_STATE_INPUT, (gpio_int_type_t) GPIO_INTR_ANYEDGE);
-
-    //create a queue to handle gpio event from isr
-    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
-    //start gpio task
-    xTaskCreate(gpio_task_io_handler, "gpio_task_io", 2048, NULL, 10, NULL);
-
-
-    //    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
-    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
-    gpio_isr_handler_add((gpio_num_t)ALARM_STATE_INPUT, gpio_isr_handler, (void*) ALARM_STATE_INPUT);
-    gpio_isr_handler_add((gpio_num_t)ALARM_ARM_INPUT, gpio_isr_handler, (void*) ALARM_ARM_INPUT);
-    gpio_isr_handler_add((gpio_num_t)DOOR_BELL_INPUT, gpio_isr_handler, (void*) DOOR_BELL_INPUT);
-    //    gpio_isr_handler_add((gpio_num_t)ALARM_MOTION_INPUT, gpio_isr_handler, (void*) ALARM_MOTION_INPUT);
-
-    gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
-    gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
-    gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
-
-
-
-    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-    ws2812_write_leds(new_state);
-
-//    gpio_pad_select_gpio((gpio_num_t)ALARM_STATE_INPUT);
-//    gpio_set_direction((gpio_num_t)ALARM_STATE_INPUT, GPIO_MODE_INPUT);
-//    ESP_LOGI(TAG,"debug p ");
-//
-//    gpio_pad_select_gpio((gpio_num_t)ALARM_MOTION_INPUT);
-//    gpio_set_direction((gpio_num_t)ALARM_MOTION_INPUT, GPIO_MODE_INPUT);
-//    ESP_LOGI(TAG,"debug p ");
-//    gpio_pad_select_gpio((gpio_num_t)ALARM_ARM_INPUT);
-//    gpio_set_direction((gpio_num_t)ALARM_ARM_INPUT, GPIO_MODE_INPUT);
-//    gpio_set_intr_type((gpio_num_t)ALARM_ARM_INPUT, GPIO_INTR_NEGEDGE); //release of button
-//    ESP_LOGI(TAG,"debug p ");
-//
-//    gpio_pad_select_gpio((gpio_num_t)ALARM_ARM_RELAY);
-//    gpio_set_direction((gpio_num_t)ALARM_ARM_RELAY, GPIO_MODE_OUTPUT);
-//    ESP_LOGI(TAG,"debug p ");
-//    gpio_pad_select_gpio((gpio_num_t)ALARM_DISARM_RELAY);
-//    gpio_set_direction((gpio_num_t)ALARM_DISARM_RELAY , GPIO_MODE_OUTPUT);
-//    ESP_LOGI(TAG,"debug p ");
-//    gpio_pad_select_gpio((gpio_num_t)DOOR_STRIKE_RELAY);
-//    gpio_set_direction((gpio_num_t)DOOR_STRIKE_RELAY, GPIO_MODE_OUTPUT);
-
-    ESP_LOGI(TAG,"isr next ");
-
-    /* Install ISR routine */
-
-    ESP_LOGI(TAG,"debug flash ");
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-    }
-
-    ESP_ERROR_CHECK(ret);
-    ESP_ERROR_CHECK( nvs_flash_init() );
-    ESP_LOGI(TAG,"debug wifi ");
-
-	// network.setup(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
-	network.setup();
-	network.init();
-	network.start();
-
-	xTaskCreate(&http_api_task, "http_api_task", 8192, NULL, 5, NULL);
-
-	// disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
-	// https://github.com/espressif/esp-idf/issues/1096
-	// https://github.com/espressif/esp-idf/issues/4585
-	// ESP_ERROR_CHECK( esp_wifi_set_ps(WIFI_PS_NONE));
-    ESP_LOGI(TAG,"debug wifi ");
-    //    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,false, true, portMAX_DELAY);
-
-    ESP_LOGI(TAG,"init nfc reader ");
-    card_reader.init();
-    ESP_LOGI(TAG,"init nfc reader finished");
-
-    // state = -1;
-}
-    
 
 struct rb_tree * loadCache(){
     ESP_LOGI(TAG,"Allocating cache true");
@@ -758,57 +575,106 @@ struct rb_tree * loadCache(){
     return tree;
 }
 
-//static const char *ATAG = "alarm_comm";
 
-//static void alarm_communication_task(void *pvParameters)
-//{
-//
-////	bool alarm_active = 0;
-////	bool arming    = 0;
-////	bool disarming = 0;
-////	bool motion    = 0;
-////	int  arm_cycle_count = 0;
-//	int alarm_send_delay=500;
-//	int alarm_cycle_max = 10;
-//
-//	char *pcTaskName;
-//	pcTaskName = ( char * ) pvParameters;
-//
-//	for( ;; ){
-//
-//		if(arm_state_needed<0){
-//			ESP_LOGI(ATAG, "Disarming alarm");
-//			gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
-//			vTaskDelay(alarm_send_delay / portTICK_PERIOD_MS);
-//			gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
-//
-//		}else if(arm_state_needed>0){
-//			ESP_LOGI(ATAG, "Arming alarm");
-//
-//			while(arm_cycle_count<alarm_cycle_max && alarm_active==0){
-//				arm_cycle_count++;
-//				gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 1);
-//				vTaskDelay(alarm_send_delay / portTICK_PERIOD_MS);
-//				gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
-//
-//				for(int i = 0; alarm_active==0 && i < 10 ; i++){
-//					vTaskDelay(250 / portTICK_PERIOD_MS);
-//					ESP_LOGI(ATAG, "Waiting on alarm");
-//				}
-//			}
-//			if(arm_state_needed>0 && alarm_active==0){
-//				ESP_LOGI(ATAG, "Arming failed, Send notification");
-//			}
-//
-//		}
-//
-//		vTaskDelay(10 / portTICK_PERIOD_MS);
-//	}
-//
-//
-//	free(pvParameters);
-//    vTaskDelete(NULL);
-//}
+void init(void)
+{
+
+    ESP_LOGI(TAG,"Setting up pins");
+
+    ws2812_control_init();
+    xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
+    init_audio();
+
+    // new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
+    // new_state.leds[LED_OUTSIDE_1] = LED_RED;
+    // new_state.leds[LED_OUTSIDE_2] = LED_BLUE;
+    // new_state.leds[LED_INSIDE_0] = LED_GREEN;
+    // ws2812_write_leds(new_state);
+
+    gpio_config_t io_conf;
+    gpio_config_t io_conf2;
+    gpio_config_t io_conf4;
+
+
+    io_conf.intr_type = (gpio_int_type_t)GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    io_conf.pull_down_en = (gpio_pulldown_t)1;
+    io_conf.pull_up_en = (gpio_pullup_t)0;
+    gpio_config(&io_conf);
+
+    io_conf2.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
+    io_conf2.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+    io_conf2.mode = GPIO_MODE_INPUT;
+    io_conf2.pull_down_en = (gpio_pulldown_t) 0;
+    io_conf2.pull_up_en = (gpio_pullup_t)0;
+    gpio_config(&io_conf2);
+
+
+
+    io_conf4.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
+    io_conf4.pin_bit_mask = GPIO_INPUT2_PIN_SEL;
+    io_conf4.mode = GPIO_MODE_INPUT;
+    io_conf4.pull_down_en = (gpio_pulldown_t) 1;
+    io_conf4.pull_up_en = (gpio_pullup_t)0;
+    gpio_config(&io_conf4);
+
+
+
+    //change gpio intrrupt type for one pin
+//    gpio_set_intr_type(ALARM_STATE_INPUT, (gpio_int_type_t) GPIO_INTR_ANYEDGE);
+
+    //create a queue to handle gpio event from isr
+    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+    //start gpio task
+    xTaskCreate(gpio_task_io_handler, "gpio_task_io", 2048, NULL, 10, NULL);
+
+
+    /* Install ISR routine */
+    //    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    gpio_isr_handler_add((gpio_num_t)ALARM_STATE_INPUT, gpio_isr_handler, (void*) ALARM_STATE_INPUT);
+    gpio_isr_handler_add((gpio_num_t)ALARM_ARM_INPUT, gpio_isr_handler, (void*) ALARM_ARM_INPUT);
+    gpio_isr_handler_add((gpio_num_t)DOOR_BELL_INPUT, gpio_isr_handler, (void*) DOOR_BELL_INPUT);
+    //    gpio_isr_handler_add((gpio_num_t)ALARM_MOTION_INPUT, gpio_isr_handler, (void*) ALARM_MOTION_INPUT);
+
+    gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
+    gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
+    gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
+
+
+
+    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
+    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
+    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
+    new_state.leds[LED_INSIDE_0]  = LED_OFF;
+    ws2812_write_leds(new_state);
+
+
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+
+    ESP_ERROR_CHECK(ret);
+
+	network.setup(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+	// network.setup();
+	network.init();
+	network.start();
+
+	xTaskCreate(&http_api_task, "http_api_task", 8192, NULL, 5, NULL);
+
+	// disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
+	// https://github.com/espressif/esp-idf/issues/1096
+	// https://github.com/espressif/esp-idf/issues/4585
+	ESP_ERROR_CHECK( esp_wifi_set_ps(WIFI_PS_NONE));
+
+    card_reader.init();
+}
+
+
 void app_main()
 {
 
@@ -869,60 +735,43 @@ void app_main()
           }
 
           if (tree) {
-//              ESP_LOGI(TAG, "debug ");
 			  struct BADGEINFO *sbadge = ( struct BADGEINFO * ) malloc(sizeof( struct BADGEINFO));
-//              ESP_LOGI(TAG, "debug ");
 			  sbadge->uid_string = (char*)malloc(sizeof(uid_string));
-//              ESP_LOGI(TAG, "debug ");
 			  strcpy(sbadge->uid_string,uid_string);
-//              ESP_LOGI(TAG, "debug ");
 
 			  struct BADGEINFO *badgerecord = ( struct BADGEINFO * ) rb_tree_find(tree, sbadge);
 
-//              ESP_LOGI(TAG, "debug 1");
 
 			  if (badgerecord!=NULL) {
-//				  	  ESP_LOGI(TAG, "debug 4");
 					  ESP_LOGI(TAG, "found badge %s  (%d)\n", badgerecord->uid_string , badgerecord->active);
 
 					  free(sbadge->uid_string);
 					  free(sbadge);
 
 			  } else {
-//	              ESP_LOGI(TAG, "debug 5");
 				  if(unlockdoor ){
-//		              ESP_LOGI(TAG, "debug 10");
 					  ESP_LOGI(TAG, "new active badge %s  (%d) adding to cache\n", sbadge->uid_string , sbadge->active);
 					  rb_tree_insert(tree, sbadge);
 					  badgerecord=sbadge;
 					  badgerecord->needswrite = 1;
 				  }else{
-//		              ESP_LOGI(TAG, "debug 2");
 					  free(sbadge->uid_string);
 					  free(sbadge);
 				  }
 			  }
 
 			  if(unlockdoor ){
-//	              ESP_LOGI(TAG, "debug 9");
 				  if(badgerecord && badgerecord->active){
-//		              ESP_LOGI(TAG, "debug 7");
 					  badgerecord->scancount++;
-//		              ESP_LOGI(TAG, "debug 8");
 					  badgerecord->needswrite = 1;
 				  }
 			  }else{
-//	              ESP_LOGI(TAG, "debug 6");
 					if(badgerecord!=NULL && badgerecord->active==1){
-//						ESP_LOGI(TAG, "debug 11");
 						unlockdoor=1;
 					}
 			  }
           }
 
-
-//          ESP_LOGI(TAG, "debug 15");
-          //bool needsalarmcode=0;
           if(unlockdoor){
         	  int pvalue=gpio_get_level((gpio_num_t)ALARM_STATE_INPUT);
         	  if(pvalue==0 && alarm_active ==0){
@@ -930,16 +779,9 @@ void app_main()
               		alarm_active = 1;
         	  }
 
-
         	  state = STATE_UNLOCKING_DOOR;
         	  arm_state_needed=-1;
         	  arm_cycle_count=0;
-
-			//   TODO: why is this here?
-        	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 1);
-              vTaskDelay(500 / portTICK_PERIOD_MS);
-        	  gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
-			  vTaskDelay(CONFIG_DOOR_DELAY / portTICK_PERIOD_MS);
 
         	  ESP_LOGI(TAG, "Checking alarm state.");
         	  int retryCount=1;
@@ -958,7 +800,6 @@ void app_main()
 
         	  if(alarm_active){
         		  ESP_LOGI(TAG, "Failed to disarm Alarm.");
-        		//   state = STATE_UNLOCKED_DOOR;
         	  }else{
             	  if(arm_state_needed>0){
             		  ESP_LOGI(TAG, "Arming alarm cancel unlock");
@@ -978,7 +819,6 @@ void app_main()
         }
 
         gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
-
    }
 }
 
