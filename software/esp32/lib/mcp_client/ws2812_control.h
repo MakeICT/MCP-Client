@@ -13,7 +13,7 @@
 #define NUM_LEDS 4
 #endif
 
-#define LED_OFF   	0x000000
+#define LED_OFF   	    0x000000
 #define LED_RED   		0x003300
 #define LED_GREEN 		0x330000
 #define LED_BLUE  		0x000033

@@ -48,7 +48,8 @@
 // #include "utils.h"
 #include "mcp_api.h"
 #include "mcp_network.h"
-#include <reader.h>
+#include "mcp_leds.h"
+#include "reader.h"
 #include "sdkconfig.h"
 
 
@@ -185,9 +186,9 @@ int  arm_state_needed = 0;
 bool motion    = 0;
 int  arm_cycle_count = 0;
 TickType_t motion_timeout = 0;
-struct led_state new_state;
 
 Network network = Network();
+LEDs lights = LEDs();
 
 /* Letsencrypt root cert, taken from server_root_cert.pem
 
@@ -286,230 +287,44 @@ static void gpio_task_io_handler(void* arg)
     }
 }
 
-//typedef struct {
-//  int gpioNum;
-//  int ledMode;
-//  void * _stateVars;
-//} ledState_t;
-//
-//ledState_t LED_MODES[] = {
-//  {.gpioNum = 0, .gpioNum = LED_OUTPUT, .ledType = LED_WS2812B_V2, .brightLimit = 24, .numPixels =  1},
-//};
-
-static int call_count=0;
-
 static void led_handler_task(void* arg)
 {
-	call_count++;
-	static bool blink=0;
-	static int blinkOn=250;
-	static int blinkOff=750;
-	static int lastState=-1;
-	static int sleepcount=0;
-	static int lastAlarmState=alarm_active;  // What is this for?????
+    while(1) 
+    {
+		lights.Update();
 
-    for(;;) {
-//		printf("%d:%d,",state, lastState);
-
-    	if(state!=lastState|| lastAlarmState!=alarm_active){
-    		printf("Changing state from %d to %d (%d)\n",lastState, state,call_count);
-			lastState = state;
-
-
-
-    	    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-    	    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-    	    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-    	    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-    	    ws2812_write_leds(new_state);
-
-    		blink=0;
-    		sleepcount=0;
-
-    		switch(state){
-
-
-    		case STATE_AUTHORIZING:
-    			blinkOn=100;
-    			blinkOff=100;
-    			break;
-    		case STATE_SYSTEM_START:
-    			blinkOn=25;
-    			blinkOff=150;
-    			break;
-    		case STATE_UNLOCKING_DOOR:
-    			blinkOn=250;
-    			blinkOff=250;
-    			break;
-    		case STATE_CARD_REJECT:
-				blinkOn=100;
-    			blinkOff=100;
-    			break;
-    		case STATE_WAIT_CARD:
-    			blinkOn=50;
-    			blinkOff=1000;
-				break;
-    		default:
-    			blinkOn=1000;
-    			blinkOff=1000;
-    		}
-    	}else{
-    		if(blink==1){
-    			if(sleepcount>=blinkOn){
-        			blink=0;
-        			sleepcount=0;
-    			}
-
-    		}else{
-    			if(sleepcount>=blinkOff){
-        			blink=1;
-        			sleepcount=0;
-    			}
-    		}
-
-    		switch(state){
-    		case STATE_SYSTEM_START:
-    			if(blink){
-        		    new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_RED;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_YELLOW;
-        		    new_state.leds[LED_INSIDE_0]  = LED_YELLOW;
-    			}else{
-        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_RED;
-    			}
-
-    		    ws2812_write_leds(new_state);
-
-    			break;
-    		case STATE_WAIT_CARD:
-        	    if(alarm_active==1){
-					if(blink){
-						new_state.leds[LED_OUTSIDE_0] = LED_RED;
-						new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-						new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-						new_state.leds[LED_INSIDE_0]  = LED_RED;
-					}
-					else{
-						new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-						new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-						new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-						new_state.leds[LED_INSIDE_0]  = LED_OFF;
-					} 	    
-        	    }else{
-    			if(blink){
-        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-    			}else{
-        		    new_state.leds[LED_OUTSIDE_0] = LED_RED;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_RED;
-    			}
-        	    }
-
-
-
-    		    ws2812_write_leds(new_state);
-
-    			break;
-    		case STATE_AUTHORIZING:
-    			if(blink){
-        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_YELLOW;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_RED;
-    			}else{
-        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-    			}
-
-    		    ws2812_write_leds(new_state);
-    			break;
-    		case STATE_UNLOCKING_DOOR:
-
-    			if(blink){
-        		    new_state.leds[LED_OUTSIDE_0] = LED_GREEN;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_YELLOW;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_GREEN;
-        		    new_state.leds[LED_INSIDE_0]  = LED_YELLOW;
-    			}else{
-        		    new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_YELLOW;
-        		    new_state.leds[LED_INSIDE_0]  = LED_GREEN;
-    			}
-
-    		    ws2812_write_leds(new_state);
-
-    			break;
-    		case STATE_UNLOCKED_DOOR:
-    		    new_state.leds[LED_OUTSIDE_0] = LED_GREEN;
-    		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
-    		    new_state.leds[LED_OUTSIDE_2] = LED_GREEN;
-    		    new_state.leds[LED_INSIDE_0]  = LED_GREEN;
-
-    		    ws2812_write_leds(new_state);
-
-    			break;
-
-			case STATE_CARD_REJECT:
-    			if(blink){
-        		    new_state.leds[LED_OUTSIDE_0] = LED_RED;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_RED;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_RED;
-        		    new_state.leds[LED_INSIDE_0]  = LED_RED;
-    			}else{
-        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-    			}
-
-    		    ws2812_write_leds(new_state);
-				break;
-			
-    		default:
-    			if(blink){
-        		    new_state.leds[LED_OUTSIDE_0] = LED_RED;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_GREEN;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_YELLOW;
-        		    new_state.leds[LED_INSIDE_0]  = LED_ORANGE;
-
-    			}else{
-        		    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-        		    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-        		    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-
-    			}
-
-
-    		    ws2812_write_leds(new_state);
-
-
-    		}
-    	}
-    	lastAlarmState=alarm_active;  // Why????
-
-    	sleepcount+=50;
-    	vTaskDelay(50 / portTICK_RATE_MS);
-
+		vTaskDelay(50 / portTICK_PERIOD_MS);
     }
+
+	vTaskDelete(NULL);
 }
-    
-int check_current() {
-    adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(ADC1_CHANNEL_7,ADC_ATTEN_DB_0);
-    int val = adc1_get_raw(ADC1_CHANNEL_7);
-    // printf("%d\n", val);
-    return val;
+
+lightPattern *system_start_pattern = new lightPattern();
+lightPattern *authorizing_pattern = new lightPattern();
+lightPattern *card_reject_pattern = new lightPattern();
+lightPattern *unlocking_door_pattern = new lightPattern();
+lightPattern *unlocked_door_pattern = new lightPattern();
+lightPattern *wait_card_pattern = new lightPattern();
+
+static void setup_light_patterns() {
+	system_start_pattern->AddState(25, LED_YELLOW, LED_RED, LED_YELLOW, LED_YELLOW);
+	system_start_pattern->AddState(150, LED_OFF, LED_OFF, LED_OFF, LED_RED);
+
+	authorizing_pattern->AddState(100, LED_OFF, LED_YELLOW, LED_OFF, LED_YELLOW);
+	authorizing_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+
+	card_reject_pattern->AddState(100, LED_OFF, LED_RED, LED_RED, LED_RED);
+	card_reject_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+
+	unlocking_door_pattern->AddState(250, LED_GREEN, LED_YELLOW, LED_GREEN, LED_YELLOW);
+	unlocking_door_pattern->AddState(250, LED_YELLOW, LED_GREEN, LED_YELLOW, LED_GREEN);
+
+	unlocked_door_pattern->AddState(1000, LED_GREEN, LED_GREEN, LED_GREEN, LED_GREEN);
+
+	wait_card_pattern->AddState(1000, LED_RED, LED_RED, LED_OFF, LED_OFF);
+	wait_card_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+
+	lights.SetPattern(system_start_pattern);	
 }
 
 
@@ -581,15 +396,9 @@ void init(void)
 
     ESP_LOGI(TAG,"Setting up pins");
 
-    ws2812_control_init();
     xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
     init_audio();
-
-    // new_state.leds[LED_OUTSIDE_0] = LED_YELLOW;
-    // new_state.leds[LED_OUTSIDE_1] = LED_RED;
-    // new_state.leds[LED_OUTSIDE_2] = LED_BLUE;
-    // new_state.leds[LED_INSIDE_0] = LED_GREEN;
-    // ws2812_write_leds(new_state);
+	setup_light_patterns();
 
     gpio_config_t io_conf;
     gpio_config_t io_conf2;
@@ -642,15 +451,6 @@ void init(void)
     gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
     gpio_set_level((gpio_num_t)ALARM_ARM_RELAY, 0);
 
-
-
-    new_state.leds[LED_OUTSIDE_0] = LED_OFF;
-    new_state.leds[LED_OUTSIDE_1] = LED_OFF;
-    new_state.leds[LED_OUTSIDE_2] = LED_OFF;
-    new_state.leds[LED_INSIDE_0]  = LED_OFF;
-    ws2812_write_leds(new_state);
-
-
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       ESP_ERROR_CHECK(nvs_flash_erase());
@@ -680,14 +480,18 @@ void app_main()
 
     init();
 
-    struct rb_tree *tree = NULL; //loadCache();
+    struct rb_tree *tree = NULL; 
+	//loadCache();
 
     bool unlockdoor=0;
 
     ESP_LOGI(TAG, "Starting loop");
 
     while(1) {
-    	state = STATE_WAIT_CARD;
+		if(state != STATE_WAIT_CARD) {
+    		state = STATE_WAIT_CARD;
+			lights.SetPattern(wait_card_pattern);
+		}
 
 //        ESP_LOGI(TAG, "looping,%d %d %d",gpio_get_level((gpio_num_t)ALARM_STATE_INPUT),gpio_get_level((gpio_num_t)ALARM_ARM_INPUT),gpio_get_level((gpio_num_t)ALARM_MOTION_INPUT));
 //    	vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -705,6 +509,7 @@ void app_main()
 
         if (uid_size > 0) {
           state = STATE_AUTHORIZING;
+		  lights.SetPattern(authorizing_pattern);
           sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
           ESP_LOGI(TAG, "Read card UID: %s", uid_string);
           if( network.isConnected() ){
@@ -714,6 +519,7 @@ void app_main()
 
 	          if (authenticate_nfc(uid_string) > 0) {
 	            state = STATE_UNLOCKING_DOOR;
+				lights.SetPattern(unlocking_door_pattern);
 //	            vTaskDelay(500 / portTICK_PERIOD_MS);
 //	            power_on_time = esp_timer_get_time();
 //	            current_detected_time = esp_timer_get_time();
@@ -724,6 +530,7 @@ void app_main()
 	            unlockdoor=1;
 	          }else { // show deny
 	        	  state = STATE_CARD_REJECT;
+				  lights.SetPattern(card_reject_pattern);
 	              ESP_LOGI(TAG, "Card Unauthorized");
 	              unlockdoor=0;
 				  vTaskDelay(3000 / portTICK_PERIOD_MS);
@@ -780,6 +587,7 @@ void app_main()
         	  }
 
         	  state = STATE_UNLOCKING_DOOR;
+			  lights.SetPattern(unlocking_door_pattern);
         	  arm_state_needed=-1;
         	  arm_cycle_count=0;
 
@@ -805,6 +613,7 @@ void app_main()
             		  ESP_LOGI(TAG, "Arming alarm cancel unlock");
             	  }else{
             		  state = STATE_UNLOCKED_DOOR;
+					  lights.SetPattern(unlocked_door_pattern);
             		  ESP_LOGI(TAG, "Alarm off");
                 	  ESP_LOGI(TAG, "Unlocking door");
                 	  gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 1);
