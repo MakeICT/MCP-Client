@@ -184,7 +184,6 @@ Reader card_reader;
 bool alarm_active = 0;
 int  arm_state_needed = 0;
 bool motion    = 0;
-int  arm_cycle_count = 0;
 TickType_t motion_timeout = 0;
 
 Network network = Network();
@@ -211,6 +210,7 @@ LEDs lights = LEDs();
 
 static xQueueHandle gpio_evt_queue = NULL;
 
+
 /**
  * @brief gpio_isr_handler  Handle button press interrupt
  */
@@ -220,12 +220,15 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
     uint32_t gpio_num = (uint32_t) arg;
     xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
 }
-bool pvalue=0;
-bool arm_button_last=0;
-bool bell_button_last=0;
+
+
 static void gpio_task_io_handler(void* arg)
 {
+	static bool pvalue=0;
+	static bool arm_button_last=0;
+	static bool bell_button_last=0;
     uint32_t io_num=99999;
+
     for(;;) {
     	// vTaskDelay(100 / portTICK_RATE_MS);
     	if(xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
@@ -251,10 +254,6 @@ static void gpio_task_io_handler(void* arg)
             }else if(io_num == ALARM_ARM_INPUT){
 
             	if(arm_button_last!=pvalue){
-                	if(arm_cycle_count>1){
-                		arm_cycle_count = 0;//resetting arm count
-                	}
-
                 	if(arm_state_needed<=0){
                     	ESP_LOGI(TAG, "Alarm button pushed.");
             			if(xTaskGetTickCount()<motion_timeout){
@@ -287,6 +286,7 @@ static void gpio_task_io_handler(void* arg)
     }
 }
 
+
 static void led_handler_task(void* arg)
 {
     while(1) 
@@ -298,6 +298,7 @@ static void led_handler_task(void* arg)
 
 	vTaskDelete(NULL);
 }
+
 
 lightPattern *system_start_pattern = new lightPattern();
 lightPattern *authorizing_pattern = new lightPattern();
@@ -385,7 +386,6 @@ struct rb_tree * loadCache(){
 	////        rb_tree_dealloc(tree, NULL);
 	    }
 
-
     ESP_LOGI(TAG,"Finished allocating cache");
     return tree;
 }
@@ -393,7 +393,6 @@ struct rb_tree * loadCache(){
 
 void init(void)
 {
-
     ESP_LOGI(TAG,"Setting up pins");
 
     xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
@@ -403,7 +402,6 @@ void init(void)
     gpio_config_t io_conf;
     gpio_config_t io_conf2;
     gpio_config_t io_conf4;
-
 
     io_conf.intr_type = (gpio_int_type_t)GPIO_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -419,8 +417,6 @@ void init(void)
     io_conf2.pull_up_en = (gpio_pullup_t)0;
     gpio_config(&io_conf2);
 
-
-
     io_conf4.intr_type = (gpio_int_type_t)GPIO_INTR_ANYEDGE;
     io_conf4.pin_bit_mask = GPIO_INPUT2_PIN_SEL;
     io_conf4.mode = GPIO_MODE_INPUT;
@@ -429,18 +425,16 @@ void init(void)
     gpio_config(&io_conf4);
 
 
+    // change gpio intrrupt type for one pin
+    // gpio_set_intr_type(ALARM_STATE_INPUT, (gpio_int_type_t) GPIO_INTR_ANYEDGE);
 
-    //change gpio intrrupt type for one pin
-//    gpio_set_intr_type(ALARM_STATE_INPUT, (gpio_int_type_t) GPIO_INTR_ANYEDGE);
-
-    //create a queue to handle gpio event from isr
+    // create a queue to handle gpio event from isr
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
-    //start gpio task
+    // start gpio task
     xTaskCreate(gpio_task_io_handler, "gpio_task_io", 2048, NULL, 10, NULL);
 
 
     /* Install ISR routine */
-    //    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
     gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
     gpio_isr_handler_add((gpio_num_t)ALARM_STATE_INPUT, gpio_isr_handler, (void*) ALARM_STATE_INPUT);
     gpio_isr_handler_add((gpio_num_t)ALARM_ARM_INPUT, gpio_isr_handler, (void*) ALARM_ARM_INPUT);
@@ -477,45 +471,40 @@ void init(void)
 
 void app_main()
 {
-
     init();
 
     struct rb_tree *tree = NULL; 
 	//loadCache();
 
-    bool unlockdoor=0;
-
     ESP_LOGI(TAG, "Starting loop");
-
     while(1) {
+    	static bool unlockdoor=0;
+		
 		if(state != STATE_WAIT_CARD) {
     		state = STATE_WAIT_CARD;
 			lights.SetPattern(wait_card_pattern);
 		}
 
-//        ESP_LOGI(TAG, "looping,%d %d %d",gpio_get_level((gpio_num_t)ALARM_STATE_INPUT),gpio_get_level((gpio_num_t)ALARM_ARM_INPUT),gpio_get_level((gpio_num_t)ALARM_MOTION_INPUT));
-//    	vTaskDelay(100 / portTICK_PERIOD_MS);
+        // ESP_LOGI(TAG, "looping,%d %d %d",gpio_get_level((gpio_num_t)ALARM_STATE_INPUT),gpio_get_level((gpio_num_t)ALARM_ARM_INPUT),gpio_get_level((gpio_num_t)ALARM_MOTION_INPUT));
+   		// vTaskDelay(100 / portTICK_PERIOD_MS);
 
     	// printf("%llu\n", esp_timer_get_time());
-        uint8_t uid[7] = {0};
-
-    	unlockdoor=0;
 
     	vTaskDelay(25 / portTICK_PERIOD_MS);
 
+        uint8_t uid[7] = {0};
         uint8_t uid_size = card_reader.poll(uid);
 
-        char uid_string[15] = {'\0'};
 
         if (uid_size > 0) {
           state = STATE_AUTHORIZING;
 		  lights.SetPattern(authorizing_pattern);
+		  
+    	  char uid_string[15] = {'\0'};
           sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
           ESP_LOGI(TAG, "Read card UID: %s", uid_string);
           if( network.isConnected() ){
 			  ESP_LOGI(TAG, "Network is connected");
-			  // authenticate_with_contact_credentials();
-			  // xTaskCreate(&keepalive_task, "keepalive_task", 8192, NULL, 5, NULL);
 
 	          if (authenticate_nfc(uid_string) > 0) {
 	            state = STATE_UNLOCKING_DOOR;
@@ -589,7 +578,6 @@ void app_main()
         	  state = STATE_UNLOCKING_DOOR;
 			  lights.SetPattern(unlocking_door_pattern);
         	  arm_state_needed=-1;
-        	  arm_cycle_count=0;
 
         	  ESP_LOGI(TAG, "Checking alarm state.");
         	  int retryCount=1;
@@ -623,10 +611,8 @@ void app_main()
             	  }
         	  }
           }
-
           esp_task_wdt_reset(); //reset task watchdog
         }
-
         gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
    }
 }
