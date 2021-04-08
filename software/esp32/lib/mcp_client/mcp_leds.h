@@ -68,6 +68,7 @@ class LEDs {
     uint8_t pin;
     lightPattern *current_pattern;
     lightState *current_state;
+    bool pattern_changed;
 
     // uint8_t mode;
     // Adafruit_NeoPixel pixels;

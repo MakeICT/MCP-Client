@@ -38,6 +38,7 @@ LEDs::LEDs() {
     pattern_queue = xQueueCreate(10, sizeof(lightPattern*));
     ws2812_control_init();
     current_pattern = NULL;
+    pattern_changed = false;
     // xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
 }
 
@@ -46,6 +47,7 @@ void LEDs::SetPattern(lightPattern* new_pattern)
     current_pattern = new_pattern;
     current_state = new_pattern->first_state;
     new_pattern->first_state->start_time = esp_timer_get_time();
+    pattern_changed = true;
 }
 
 void LEDs::Update()
@@ -53,13 +55,16 @@ void LEDs::Update()
     // ESP_LOGI(LED_TAG, "LED update");
     if(current_pattern != NULL) {
         // ESP_LOGI(LED_TAG, "Pattern not NULL");
-        uint32_t elapsed_time = esp_timer_get_time() - current_state->start_time;
-        ESP_LOGI(LED_TAG, "%d", elapsed_time);    
-        if((esp_timer_get_time() - current_state->start_time) > current_state->duration) {
-            ESP_LOGI(LED_TAG, "Changing state");
+        bool state_expired = (esp_timer_get_time() - current_state->start_time) > current_state->duration;
+        // ESP_LOGI(LED_TAG, "%d", elapsed_time);    
+        if(state_expired) {
+            // ESP_LOGI(LED_TAG, "Changing state");
             current_state = current_state->next_state;
             current_state->start_time = esp_timer_get_time();
         }
-        ws2812_write_leds(current_state->led_states);
+        if(pattern_changed || state_expired) {
+            ws2812_write_leds(current_state->led_states);
+            pattern_changed = false;
+        }
     }
 }
