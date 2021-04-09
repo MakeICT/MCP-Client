@@ -1,4 +1,7 @@
 #include "mcp_wifi.h"
+
+const char *WIFI_TAG = "MCP_WIFI";
+
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
 

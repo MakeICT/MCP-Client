@@ -1,5 +1,8 @@
 #include "mcp_ethernet.h"
 
+
+const char *ETH_TAG = "MCP_ETHERNET";
+
 esp_eth_handle_t eth_handle;
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */

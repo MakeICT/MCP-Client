@@ -1,5 +1,7 @@
 #include "mcp_api.h"
 
+const char *API_TAG = "MCP_API";
+
 int client_id = CLIENT_TAG;
 char* end_flag = "[[[HTTP_END]]]";
 QueueHandle_t request_queue;
@@ -44,6 +46,7 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt)
             strncpy(data, end_flag, strlen(end_flag));
             data[strlen(end_flag)] = '\0';
             xQueueSend(response_queue, (void*) &data, (TickType_t) 0);
+            break;
         }
         
         case HTTP_EVENT_DISCONNECTED:

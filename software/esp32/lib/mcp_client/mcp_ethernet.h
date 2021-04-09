@@ -22,7 +22,7 @@
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 
-static const char *ETH_TAG = "MCP_ETHERNET";
+extern const char *ETH_TAG;
 
 /* The event group allows multiple bits for each event,
    but we only care about one event - are we connected
