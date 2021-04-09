@@ -27,12 +27,11 @@ static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
 			ESP_LOGI(WIFI_TAG, "retry to connect to the AP");
 	        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
 		} else {
-			//			xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-			ESP_LOGI(WIFI_TAG, "failed to connect, sleeping 5 minutes");
-			vTaskDelay(300000 / portTICK_PERIOD_MS);
+			// xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+			ESP_LOGW(WIFI_TAG, "failed to connect, sleeping 5 seconds");
+			vTaskDelay(5000 / portTICK_PERIOD_MS);
 			esp_wifi_connect();
 			s_retry_num=0;
-
 		}
 
         break;
@@ -66,10 +65,12 @@ uint8_t wifiStart()
 {
     ESP_ERROR_CHECK( esp_wifi_start() );
 
-    if (!(xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT)) {
-        // indicate failure
-        return 1;
-    }
+    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,false, true, portMAX_DELAY);
+
+    // if (!(xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT)) {
+    //     // indicate failure
+    //     return 1;
+    // }
 
     return 0;
 }
