@@ -35,15 +35,8 @@
 #include "esp_err.h"
 #include "nvs_flash.h"
 #include "esp_task_wdt.h"
-#include <driver/adc.h>
 #include <esp_timer.h>
 #include <driver/gpio.h>
-
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/netdb.h"
-#include "lwip/dns.h"
 
 // #include "utils.h"
 #include "mcp_api.h"
