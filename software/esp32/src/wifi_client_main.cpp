@@ -69,13 +69,18 @@ extern int badge_compare_callback(struct rb_tree *self, struct rb_node *node_a, 
     return strcmp(a->uid_string, b->uid_string);
 }
 
-static const short STATE_UNKNOWN = 0;
-static const short STATE_SYSTEM_START = 1;
-static const short STATE_WAIT_CARD = 2;
-static const short STATE_AUTHORIZING = 3;
-static const short STATE_CARD_REJECT = 4;
-static const short STATE_UNLOCKING_DOOR = 5;
-static const short STATE_UNLOCKED_DOOR = 6;
+enum state
+{
+    STATE_UNKNOWN,
+    STATE_SYSTEM_START,
+    STATE_NO_NETWORK,
+    STATE_ALARM_ARMED,
+    STATE_WAIT_CARD,
+    STATE_AUTHORIZING,
+    STATE_CARD_REJECT,
+    STATE_UNLOCKING_DOOR,
+    STATE_UNLOCKED_DOOR
+};
 
 extern "C"
 {
