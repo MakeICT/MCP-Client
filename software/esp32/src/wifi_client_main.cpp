@@ -125,6 +125,42 @@ LEDs lights = LEDs();
 //     "Content-Type: application/x-www-form-urlencoded\r\n"
 //     "\r\n";
 
+lightPattern *system_start_pattern = new lightPattern();
+lightPattern *no_network_pattern = new lightPattern();
+lightPattern *alarm_armed_pattern = new lightPattern();
+lightPattern *wait_card_pattern = new lightPattern();
+lightPattern *authorizing_pattern = new lightPattern();
+lightPattern *card_reject_pattern = new lightPattern();
+lightPattern *unlocking_door_pattern = new lightPattern();
+lightPattern *unlocked_door_pattern = new lightPattern();
+
+static void setup_light_patterns()
+{
+    system_start_pattern->AddState(25, LED_YELLOW, LED_RED, LED_YELLOW, LED_YELLOW);
+    system_start_pattern->AddState(150, LED_OFF, LED_OFF, LED_OFF, LED_RED);
+
+    no_network_pattern->AddState(150, LED_YELLOW, LED_YELLOW, LED_OFF, LED_YELLOW);
+    no_network_pattern->AddState(150, LED_OFF, LED_RED, LED_RED, LED_RED);
+
+    alarm_armed_pattern->AddState(100, LED_RED, LED_RED, LED_OFF, LED_OFF);
+    alarm_armed_pattern->AddState(1000, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+    
+    wait_card_pattern->AddState(1000, LED_RED, LED_RED, LED_OFF, LED_OFF);
+    wait_card_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+
+    authorizing_pattern->AddState(100, LED_OFF, LED_YELLOW, LED_OFF, LED_YELLOW);
+    authorizing_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+
+    card_reject_pattern->AddState(100, LED_OFF, LED_RED, LED_RED, LED_RED);
+    card_reject_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
+
+    unlocking_door_pattern->AddState(250, LED_GREEN, LED_YELLOW, LED_GREEN, LED_YELLOW);
+    unlocking_door_pattern->AddState(250, LED_YELLOW, LED_GREEN, LED_YELLOW, LED_GREEN);
+
+    unlocked_door_pattern->AddState(1000, LED_GREEN, LED_GREEN, LED_GREEN, LED_GREEN);
+
+}
+
 static xQueueHandle gpio_evt_queue = NULL;
 
 /**
@@ -156,11 +192,15 @@ static void gpio_task_io_handler(void *arg)
                 if (pvalue == 1 && alarm_active == 1)
                 {
                     printf("Alarm off\n");
+                    // state = STATE_WAIT_CARD;
+                    // lights.SetPattern(wait_card_pattern);
                     alarm_active = 0;
                 }
                 if (pvalue == 0 && alarm_active == 0)
                 {
                     printf("Alarm on\n");
+                    state = STATE_ALARM_ARMED;
+                    lights.SetPattern(alarm_armed_pattern);
                     alarm_active = 1;
                 }
             }
@@ -222,33 +262,6 @@ static void led_handler_task(void *arg)
     }
 
     vTaskDelete(NULL);
-}
-
-lightPattern *system_start_pattern = new lightPattern();
-lightPattern *authorizing_pattern = new lightPattern();
-lightPattern *card_reject_pattern = new lightPattern();
-lightPattern *unlocking_door_pattern = new lightPattern();
-lightPattern *unlocked_door_pattern = new lightPattern();
-lightPattern *wait_card_pattern = new lightPattern();
-
-static void setup_light_patterns()
-{
-    system_start_pattern->AddState(25, LED_YELLOW, LED_RED, LED_YELLOW, LED_YELLOW);
-    system_start_pattern->AddState(150, LED_OFF, LED_OFF, LED_OFF, LED_RED);
-
-    authorizing_pattern->AddState(100, LED_OFF, LED_YELLOW, LED_OFF, LED_YELLOW);
-    authorizing_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
-
-    card_reject_pattern->AddState(100, LED_OFF, LED_RED, LED_RED, LED_RED);
-    card_reject_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
-
-    unlocking_door_pattern->AddState(250, LED_GREEN, LED_YELLOW, LED_GREEN, LED_YELLOW);
-    unlocking_door_pattern->AddState(250, LED_YELLOW, LED_GREEN, LED_YELLOW, LED_GREEN);
-
-    unlocked_door_pattern->AddState(1000, LED_GREEN, LED_GREEN, LED_GREEN, LED_GREEN);
-
-    wait_card_pattern->AddState(1000, LED_RED, LED_RED, LED_OFF, LED_OFF);
-    wait_card_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
 }
 
 struct rb_tree *loadCache()
@@ -400,16 +413,22 @@ void app_main()
     {
         static bool unlockdoor = 0;
 
-        if (state != STATE_WAIT_CARD)
+        if (state != STATE_WAIT_CARD && !alarm_active)
         {
             state = STATE_WAIT_CARD;
             lights.SetPattern(wait_card_pattern);
         }
 
-        // ESP_LOGI(TAG, "looping,%d %d %d",gpio_get_level((gpio_num_t)ALARM_STATE_INPUT),gpio_get_level((gpio_num_t)ALARM_ARM_INPUT),gpio_get_level((gpio_num_t)ALARM_MOTION_INPUT));
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
-
-        // printf("%llu\n", esp_timer_get_time());
+        // if (true)
+        while (!network.isConnected())
+        {
+            if(state != STATE_NO_NETWORK) {
+                state = STATE_NO_NETWORK;
+                lights.SetPattern(no_network_pattern);
+            }
+            // network.restart();
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        }
 
         vTaskDelay(25 / portTICK_PERIOD_MS);
 
@@ -424,36 +443,25 @@ void app_main()
             char uid_string[15] = {'\0'};
             sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
             ESP_LOGI(TAG, "Read card UID: %s", uid_string);
-            if (network.isConnected())
+
+            if (authenticate_nfc(uid_string) > 0)
             {
-                ESP_LOGI(TAG, "Network is connected");
-
-                if (authenticate_nfc(uid_string) > 0)
-                {
-                    state = STATE_UNLOCKING_DOOR;
-                    lights.SetPattern(unlocking_door_pattern);
-                    // vTaskDelay(500 / portTICK_PERIOD_MS);
-                    // power_on_time = esp_timer_get_time();
-                    // current_detected_time = esp_timer_get_time();
-                    ESP_LOGI(TAG, "Card Authorized");
-
-                    // playTune(8,notes_scale,dur_scale);
-
-                    unlockdoor = 1;
-                }
-                else
-                { // show deny
-                    state = STATE_CARD_REJECT;
-                    lights.SetPattern(card_reject_pattern);
-                    ESP_LOGI(TAG, "Card Unauthorized");
-                    unlockdoor = 0;
-                    vTaskDelay(3000 / portTICK_PERIOD_MS);
-                }
+                state = STATE_UNLOCKING_DOOR;
+                lights.SetPattern(unlocking_door_pattern);
+                // vTaskDelay(500 / portTICK_PERIOD_MS);
+                // power_on_time = esp_timer_get_time();
+                // current_detected_time = esp_timer_get_time();
+                ESP_LOGI(TAG, "Card Authorized");
+                // playTune(8,notes_scale,dur_scale);
+                unlockdoor = 1;
             }
             else
-            {
-                ESP_LOGW(TAG, "Network connection down.");
-                network.restart();
+            { // show deny
+                state = STATE_CARD_REJECT;
+                lights.SetPattern(card_reject_pattern);
+                ESP_LOGI(TAG, "Card Unauthorized");
+                unlockdoor = 0;
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
             }
 
             if (tree)
