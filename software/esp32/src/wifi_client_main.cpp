@@ -176,7 +176,7 @@ static void gpio_task_io_handler(void *arg)
 {
     static bool pvalue = 0;
     static bool arm_button_last = 0;
-    static bool bell_button_last = 0;
+    // static bool bell_button_last = 0;
     uint32_t io_num = 99999;
 
     for (;;)
@@ -241,7 +241,6 @@ static void gpio_task_io_handler(void *arg)
                 //     ESP_LOGI(TAG, "Arm motion active. Resetting countdown");
                 //     motion_timeout = xTaskGetTickCount()+(30*1000 / portTICK_PERIOD_MS);
                 // }
-    
             }
             else
             {
@@ -304,7 +303,6 @@ struct rb_tree *loadCache()
         // sbadge->active = 0;
         // sbadge->scancount = 0;
 
-
         // struct BADGEINFO *f = ( struct BADGEINFO * ) rb_tree_find(tree, sbadge);
         // if (f) {
         //         fprintf(stdout, "found badge %s  (%d))\n", f->uid_string,f->active);
@@ -358,9 +356,6 @@ void init(void)
     io_conf4.pull_up_en = (gpio_pullup_t)0;
     gpio_config(&io_conf4);
 
-    // change gpio intrrupt type for one pin
-    // gpio_set_intr_type(ALARM_STATE_INPUT, (gpio_int_type_t) GPIO_INTR_ANYEDGE);
-
     // create a queue to handle gpio event from isr
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
     // start gpio task
@@ -371,7 +366,7 @@ void init(void)
     gpio_isr_handler_add((gpio_num_t)ALARM_STATE_INPUT, gpio_isr_handler, (void *)ALARM_STATE_INPUT);
     gpio_isr_handler_add((gpio_num_t)ALARM_ARM_INPUT, gpio_isr_handler, (void *)ALARM_ARM_INPUT);
     gpio_isr_handler_add((gpio_num_t)DOOR_BELL_INPUT, gpio_isr_handler, (void *)DOOR_BELL_INPUT);
-    //    gpio_isr_handler_add((gpio_num_t)ALARM_MOTION_INPUT, gpio_isr_handler, (void*) ALARM_MOTION_INPUT);
+    // gpio_isr_handler_add((gpio_num_t)ALARM_MOTION_INPUT, gpio_isr_handler, (void*) ALARM_MOTION_INPUT);
 
     gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
     gpio_set_level((gpio_num_t)ALARM_DISARM_RELAY, 0);
@@ -565,8 +560,8 @@ void app_main()
                     }
                 }
             }
-            esp_task_wdt_reset(); //reset task watchdog
         }
         gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 0);
+        esp_task_wdt_reset(); //reset task watchdog
     }
 }
