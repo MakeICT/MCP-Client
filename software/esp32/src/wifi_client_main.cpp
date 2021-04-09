@@ -39,6 +39,7 @@
 #include <driver/gpio.h>
 
 // #include "utils.h"
+#include "definitions.h"
 #include "mcp_api.h"
 #include "mcp_network.h"
 #include "mcp_leds.h"
@@ -51,72 +52,6 @@ extern "C"
 #include "../mcp_client/audio.h"
 #include "../mcp_client/ws2812_control.h"
 }
-
-#define WIFI_SSID CONFIG_WIFI_SSID
-#define WIFI_PASS CONFIG_WIFI_PASSWORD
-#define ESP_MAXIMUM_RETRY CONFIG_ESP_MAXIMUM_RETRY
-
-#define SERVER CONFIG_SERVER
-#define SERVER2 CONFIG_SERVER2
-#define PORT CONFIG_PORT
-
-#define ESP_INTR_FLAG_DEFAULT 0
-
-//#define CONFIG_DOOR_DELAY 500
-//#define CONFIG_DOOR_OPEN 1500
-#define CONFIG_ALARM_ARM_DELAY 2000
-#define CONFIG_ALARM_ARM_RETRY 4
-#define CONFIG_ALARM_DISARM_DELAY 5000
-
-#define CURRENT_TIMEOUT CONFIG_CURRENT_TIMEOUT * 1000000
-
-#define OLIMEX_REL1_PIN 32
-#define OLIMEX_REL2_PIN 33
-#define OLIMEX_BUT_PIN 34
-
-#define USBUARTTX 01
-#define USBUARTRX 03
-#define CANTX 05
-#define CANRX 35
-#define ETH1 19
-#define ETH2 20
-#define ETH3 21
-#define ETH4 22
-#define ETH5 23
-#define ETH6 24
-#define ETH7 25
-#define ETH8 26
-
-#define UEXT3 04
-#define UEXT4 36 //input door bell
-#define UEXT5 16
-#define UEXT6 13
-#define UEXT7 15
-#define UEXT8 02
-#define UEXT9 14
-#define UEXT10 17
-
-#define LED_OUTSIDE_0 2
-#define LED_OUTSIDE_1 1
-#define LED_OUTSIDE_2 0
-#define LED_INSIDE_0 3
-
-#define AUDIO_PIN UEXT5
-#define LED_PIN UEXT3
-
-#define ALARM_ARM_INPUT OLIMEX_BUT_PIN
-#define ALARM_STATE_INPUT 39
-#define DOOR_BELL_INPUT UEXT4
-//#define ALARM_MOTION_INPUT
-#define ALARM_ARM_RELAY OLIMEX_REL2_PIN
-#define ALARM_DISARM_RELAY OLIMEX_REL1_PIN
-#define DOOR_STRIKE_RELAY 12
-
-#define GPIO_INPUT_PIN_ALRM ((1ULL << ALARM_STATE_INPUT) | (1ULL << DOOR_BELL_INPUT)) //| (1ULL<<ALARM_MOTION_INPUT)
-#define GPIO_INPUT_PIN_SEL ((1ULL << ALARM_STATE_INPUT) | (1ULL << DOOR_BELL_INPUT))  //| (1ULL<<ALARM_MOTION_INPUT)
-#define GPIO_INPUT2_PIN_SEL ((1ULL << ALARM_ARM_INPUT))								  //| (1ULL<<ALARM_MOTION_INPUT)
-#define GPIO_OUTPUT_PIN_SEL ((1ULL << ALARM_ARM_RELAY) | (1ULL << ALARM_DISARM_RELAY) | (1ULL << DOOR_STRIKE_RELAY))
-//#define GPIO_OUTPUT_FLOAT_PIN_SEL  ((1ULL<<NFC_RESET))
 
 static const char *TAG = "wifi_client_main";
 
