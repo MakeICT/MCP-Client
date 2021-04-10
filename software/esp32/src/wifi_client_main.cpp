@@ -30,7 +30,8 @@
 
 // #include "utils.h"
 #include "definitions.h"
-#include "mcp_api.h"
+// #include "mcp_api.h"
+#include "mcp_link.h"
 #include "mcp_network.h"
 #include "mcp_leds.h"
 #include "reader.h"
@@ -105,6 +106,7 @@ bool motion = 0;
 TickType_t motion_timeout = 0;
 
 Network network = Network();
+MCPLink server = MCPLink();
 LEDs lights = LEDs();
 
 /* Letsencrypt root cert, taken from server_root_cert.pem
@@ -386,6 +388,8 @@ void init(void)
     network.init();
     network.start();
 
+    server.ConnectWebsocket();
+
     xTaskCreate(&http_api_task, "http_api_task", 8192, NULL, 5, NULL);
 
     // disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
@@ -439,7 +443,7 @@ void app_main()
             sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
             ESP_LOGI(TAG, "Read card UID: %s", uid_string);
 
-            if (authenticate_nfc(uid_string) > 0)
+            if (server.AuthenticateNFC(uid_string) > 0)
             {
                 state = STATE_UNLOCKING_DOOR;
                 lights.SetPattern(unlocking_door_pattern);
