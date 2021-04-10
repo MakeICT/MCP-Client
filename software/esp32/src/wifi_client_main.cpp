@@ -75,6 +75,7 @@ enum state
     STATE_UNKNOWN,
     STATE_SYSTEM_START,
     STATE_NO_NETWORK,
+    STATE_NO_SERVER,
     STATE_ALARM_ARMED,
     STATE_WAIT_CARD,
     STATE_AUTHORIZING,
@@ -111,6 +112,7 @@ LEDs lights = LEDs();
 
 lightPattern *system_start_pattern = new lightPattern();
 lightPattern *no_network_pattern = new lightPattern();
+lightPattern *no_server_pattern = new lightPattern();
 lightPattern *alarm_armed_pattern = new lightPattern();
 lightPattern *wait_card_pattern = new lightPattern();
 lightPattern *authorizing_pattern = new lightPattern();
@@ -125,6 +127,11 @@ static void setup_light_patterns()
 
     no_network_pattern->AddState(150, LED_YELLOW, LED_YELLOW, LED_OFF, LED_YELLOW);
     no_network_pattern->AddState(150, LED_OFF, LED_RED, LED_RED, LED_RED);
+    
+    no_server_pattern->AddState(500, LED_BLUE, LED_OFF, LED_OFF, LED_BLUE);
+    no_server_pattern->AddState(500, LED_OFF, LED_BLUE, LED_OFF, LED_OFF);
+    no_server_pattern->AddState(500, LED_OFF, LED_OFF, LED_BLUE, LED_BLUE);
+    no_server_pattern->AddState(500, LED_OFF, LED_BLUE, LED_OFF, LED_OFF);
 
     alarm_armed_pattern->AddState(100, LED_RED, LED_RED, LED_OFF, LED_OFF);
     alarm_armed_pattern->AddState(1000, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
@@ -143,6 +150,48 @@ static void setup_light_patterns()
 
     unlocked_door_pattern->AddState(1000, LED_GREEN, LED_GREEN, LED_GREEN, LED_GREEN);
 
+}
+
+void set_state(int new_state)
+{
+    if(state == new_state){
+        return;
+    } 
+    state = new_state;
+    switch(state)
+    {
+        case STATE_SYSTEM_START:
+            lights.SetPattern(system_start_pattern);
+            break;
+        case STATE_NO_NETWORK:
+            lights.SetPattern(no_network_pattern);
+            break;
+        case STATE_NO_SERVER:
+            lights.SetPattern(no_server_pattern);
+            break; 
+        case STATE_ALARM_ARMED:
+            lights.SetPattern(alarm_armed_pattern);
+            break;
+        case STATE_WAIT_CARD:
+            lights.SetPattern(wait_card_pattern);
+            break;
+        case STATE_AUTHORIZING:
+            lights.SetPattern(authorizing_pattern);
+            break;
+        case STATE_CARD_REJECT:
+            lights.SetPattern(card_reject_pattern);
+            break;
+        case STATE_UNLOCKING_DOOR:
+            lights.SetPattern(unlocked_door_pattern);
+            break;
+        case STATE_UNLOCKED_DOOR:
+            lights.SetPattern(unlocked_door_pattern);
+            break;
+        case STATE_UNKNOWN:
+        default:
+            lights.SetPattern(system_start_pattern);
+            break;
+    }
 }
 
 static xQueueHandle gpio_evt_queue = NULL;
@@ -183,8 +232,7 @@ static void gpio_task_io_handler(void *arg)
                 if (pvalue == 0 && alarm_active == 0)
                 {
                     printf("Alarm on\n");
-                    state = STATE_ALARM_ARMED;
-                    lights.SetPattern(alarm_armed_pattern);
+                    set_state(STATE_ALARM_ARMED);
                     alarm_active = 1;
                 }
             }
@@ -313,7 +361,7 @@ void init(void)
     init_audio();
     setup_light_patterns();
     xTaskCreate(led_handler_task, "led_handler_task", 2048, NULL, 10, NULL);
-    lights.SetPattern(system_start_pattern);
+    set_state(STATE_SYSTEM_START);
 
     gpio_config_t io_conf;
     gpio_config_t io_conf2;
@@ -394,20 +442,21 @@ void app_main()
     {
         static bool unlockdoor = 0;
 
-        if (state != STATE_WAIT_CARD && !alarm_active)
+        if (!alarm_active)
         {
-            state = STATE_WAIT_CARD;
-            lights.SetPattern(wait_card_pattern);
+            set_state(STATE_WAIT_CARD);
         }
 
-        // if (true)
-        while (!network.isConnected())
+        
+        while (!network.isConnected() || !server.WebsocketConnected())
         {
-            if(state != STATE_NO_NETWORK) {
-                state = STATE_NO_NETWORK;
-                lights.SetPattern(no_network_pattern);
+            if(!network.isConnected()){
+                set_state(STATE_NO_NETWORK);
+                // network.restart();
             }
-            // network.restart();
+            else {
+                set_state(STATE_NO_SERVER);
+            }
             vTaskDelay(500 / portTICK_PERIOD_MS);
         }
 
@@ -418,8 +467,7 @@ void app_main()
 
         if (uid_size > 0)
         {
-            state = STATE_AUTHORIZING;
-            lights.SetPattern(authorizing_pattern);
+            set_state(STATE_AUTHORIZING);
 
             char uid_string[15] = {'\0'};
             sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
@@ -427,8 +475,7 @@ void app_main()
 
             if (server.AuthenticateNFC(uid_string) > 0)
             {
-                state = STATE_UNLOCKING_DOOR;
-                lights.SetPattern(unlocking_door_pattern);
+                set_state(STATE_UNLOCKING_DOOR);
                 // vTaskDelay(500 / portTICK_PERIOD_MS);
                 // power_on_time = esp_timer_get_time();
                 // current_detected_time = esp_timer_get_time();
@@ -438,8 +485,7 @@ void app_main()
             }
             else
             { // show deny
-                state = STATE_CARD_REJECT;
-                lights.SetPattern(card_reject_pattern);
+                set_state(STATE_CARD_REJECT);
                 ESP_LOGI(TAG, "Card Unauthorized");
                 unlockdoor = 0;
                 vTaskDelay(3000 / portTICK_PERIOD_MS);
@@ -502,8 +548,7 @@ void app_main()
                     alarm_active = 1;
                 }
 
-                state = STATE_UNLOCKING_DOOR;
-                lights.SetPattern(unlocking_door_pattern);
+                set_state(STATE_UNLOCKING_DOOR);
                 arm_state_needed = -1;
 
                 ESP_LOGI(TAG, "Checking alarm state.");
@@ -535,8 +580,7 @@ void app_main()
                     }
                     else
                     {
-                        state = STATE_UNLOCKED_DOOR;
-                        lights.SetPattern(unlocked_door_pattern);
+                        set_state(STATE_UNLOCKED_DOOR);
                         ESP_LOGI(TAG, "Alarm off");
                         ESP_LOGI(TAG, "Unlocking door");
                         gpio_set_level((gpio_num_t)DOOR_STRIKE_RELAY, 1);
