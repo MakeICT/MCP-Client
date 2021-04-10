@@ -14,8 +14,6 @@
 extern const char *API_TAG;
 
 /* Constants that aren't configurable in menuconfig */
-#define WEB_SERVER CONFIG_SERVER ":" CONFIG_PORT
-#define WEB_URL "http://" WEB_SERVER
 #define CLIENT_TAG CONFIG_CLIENT_TAG
 
 

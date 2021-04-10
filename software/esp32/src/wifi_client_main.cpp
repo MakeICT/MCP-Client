@@ -288,10 +288,8 @@ static void led_handler_task(void *arg)
     while (1)
     {
         lights.Update();
-
         vTaskDelay(50 / portTICK_PERIOD_MS);
     }
-
     vTaskDelete(NULL);
 }
 
