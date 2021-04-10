@@ -36,7 +36,6 @@ esp_err_t _http_event_handle(esp_http_client_event_t *evt);
 void http_api_task(void *pvParameters);
 char* api_call(const char* endpoint, char* payload);
 
-int authenticate_nfc(char* nfc_id); 
 bool load_nfc_list(); 
 
 #endif

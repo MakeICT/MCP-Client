@@ -221,45 +221,6 @@ char* api_call(const char* endpoint, char* payload) {
     return response;
 }   
 
-int authenticate_nfc(char* nfc_id) {
-	int status = 0;
-
-    char format[] = "clients/%d/verify/%s";
-    char payload[] = "{}";
-    uint8_t endpoint_length = sizeof(char) * (strlen(format) + strlen(nfc_id) + 3);
-    ESP_LOGI(API_TAG, "endpoint length: %d", endpoint_length);
-    char* endpoint = (char*) malloc(endpoint_length);
-
-    sprintf(endpoint, "clients/%d/verify/%s", client_id, nfc_id);
-
-    char* data = api_call(endpoint, payload); 
-
-    if(data==NULL){
-        ESP_LOGE(API_TAG, "ERROR authenticating NFC!");
-    	return -1;
-    }
-
-    if(data)  {
-        cJSON *root = cJSON_Parse(data);
-
-        char *authorized = cJSON_GetObjectItem(root, "authorized")->valuestring;
-        if(strcmp(authorized, "true") == 0) {
-            status = 1;
-            ESP_LOGI(API_TAG, "Card Accepted!");
-        } 
-        else {
-            ESP_LOGI(API_TAG, "Card Denied!");
-        }
-
-        cJSON_Delete(root);
-        vPortFree(data);
-    }
-
-    free(endpoint);
-
-    return status;
-}
-
 bool load_nfc_list() { //char* nfc_list
     bool status = false;
 
