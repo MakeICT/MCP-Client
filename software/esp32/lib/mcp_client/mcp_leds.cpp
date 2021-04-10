@@ -25,6 +25,7 @@ void lightPattern::AddState(lightState state)
     }
     else {
         last_state->next_state = new_state;
+        last_state = new_state;
     }
     new_state->led_states.leds[0] = state.led_states.leds[0];
     new_state->led_states.leds[1] = state.led_states.leds[1];
