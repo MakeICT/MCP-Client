@@ -182,7 +182,8 @@ void set_state(int new_state)
             lights.SetPattern(card_reject_pattern);
             break;
         case STATE_UNLOCKING_DOOR:
-            lights.SetPattern(unlocked_door_pattern);
+            lights.SetPattern(unlocking_door_pattern);
+            // playTune(8,notes_scale,dur_scale);
             break;
         case STATE_UNLOCKED_DOOR:
             lights.SetPattern(unlocked_door_pattern);
@@ -440,7 +441,11 @@ void app_main()
     {
         static bool unlockdoor = 0;
 
-        if (!alarm_active)
+        if (alarm_active)
+        {
+            set_state(STATE_ALARM_ARMED);
+        }
+        else 
         {
             set_state(STATE_WAIT_CARD);
         }
@@ -473,12 +478,10 @@ void app_main()
 
             if (server.AuthenticateNFC(uid_string) > 0)
             {
-                set_state(STATE_UNLOCKING_DOOR);
                 // vTaskDelay(500 / portTICK_PERIOD_MS);
                 // power_on_time = esp_timer_get_time();
                 // current_detected_time = esp_timer_get_time();
                 ESP_LOGI(TAG, "Card Authorized");
-                // playTune(8,notes_scale,dur_scale);
                 unlockdoor = 1;
             }
             else
