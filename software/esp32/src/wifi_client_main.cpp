@@ -463,6 +463,11 @@ void app_main()
             vTaskDelay(500 / portTICK_PERIOD_MS);
         }
 
+        if(xPortGetFreeHeapSize() < 30000) {
+            ESP_LOGE(TAG, "Running out of memory; Restarting!");
+            esp_restart();                
+        }
+
         vTaskDelay(25 / portTICK_PERIOD_MS);
 
         uint8_t uid[7] = {0};
