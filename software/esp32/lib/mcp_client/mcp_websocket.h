@@ -24,10 +24,11 @@
 extern const char *WS_TAG;
 
 void websocket_init();
-void websocket_start(void);
+bool websocket_start(void);
 void websocket_stop();
 void websocket_send(char * data, int len);
 bool websocket_connected();
+uint64_t websocket_idle_time();
 char* websocket_send_and_receive(char * data, int len);
 
 #endif
