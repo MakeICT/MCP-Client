@@ -133,10 +133,10 @@ static void setup_light_patterns()
     no_server_pattern->AddState(500, LED_OFF, LED_OFF, LED_BLUE, LED_BLUE);
     no_server_pattern->AddState(500, LED_OFF, LED_BLUE, LED_OFF, LED_OFF);
 
-    alarm_armed_pattern->AddState(100, LED_RED, LED_RED, LED_OFF, LED_OFF);
+    alarm_armed_pattern->AddState(100, LED_RED, LED_OFF, LED_OFF, LED_RED);
     alarm_armed_pattern->AddState(1000, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
     
-    wait_card_pattern->AddState(1000, LED_RED, LED_RED, LED_OFF, LED_OFF);
+    wait_card_pattern->AddState(1000, LED_RED, LED_OFF, LED_OFF, LED_RED);
     wait_card_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
 
     authorizing_pattern->AddState(100, LED_OFF, LED_YELLOW, LED_OFF, LED_YELLOW);
