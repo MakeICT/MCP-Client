@@ -33,7 +33,7 @@ class MCPLink
     public:
         MCPLink();
 
-        void ConnectWebsocket();
+        bool ConnectWebsocket();
         int DisconnectWebsocket();
         bool WebsocketConnected();
 
