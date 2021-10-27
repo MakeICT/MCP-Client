@@ -459,6 +459,7 @@ void app_main()
             }
             else {
                 set_state(STATE_NO_SERVER);
+                server.ConnectWebsocket();
             }
             vTaskDelay(500 / portTICK_PERIOD_MS);
         }
