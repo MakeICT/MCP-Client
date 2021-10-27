@@ -439,7 +439,7 @@ void app_main()
     ESP_LOGI(TAG, "Starting loop");
     while (1)
     {
-        static bool unlockdoor = 0;
+        bool unlockdoor = 0;
 
         if (alarm_active)
         {
@@ -454,10 +454,12 @@ void app_main()
         while (!network.isConnected() || !server.WebsocketConnected())
         {
             if(!network.isConnected()){
+                ESP_LOGW(TAG, "No Network!");
                 set_state(STATE_NO_NETWORK);
                 // network.restart();
             }
             else {
+                ESP_LOGW(TAG, "No server!");
                 set_state(STATE_NO_SERVER);
                 server.ConnectWebsocket();
             }
@@ -482,7 +484,8 @@ void app_main()
             sprintf(uid_string, "%02x%02x%02x%02x%02x%02x%02x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6]);
             ESP_LOGI(TAG, "Read card UID: %s", uid_string);
 
-            if (server.AuthenticateNFC(uid_string) > 0)
+            int ret = server.AuthenticateNFC(uid_string);
+            if (ret == 1)
             {
                 // vTaskDelay(500 / portTICK_PERIOD_MS);
                 // power_on_time = esp_timer_get_time();
@@ -490,7 +493,7 @@ void app_main()
                 ESP_LOGI(TAG, "Card Authorized");
                 unlockdoor = 1;
             }
-            else
+            else if(ret == 0)
             { // show deny
                 set_state(STATE_CARD_REJECT);
                 ESP_LOGI(TAG, "Card Unauthorized");
