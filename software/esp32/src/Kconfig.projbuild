@@ -1,4 +1,4 @@
-menu "Example Configuration"
+menu "MCP Configuration"
 
 	config CLIENT_TAG
 	    int "Client ID"
