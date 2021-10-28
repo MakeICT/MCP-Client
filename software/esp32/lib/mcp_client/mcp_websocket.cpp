@@ -69,7 +69,7 @@ void websocket_init()
 
     esp_websocket_client_config_t websocket_cfg = {};
 
-    websocket_cfg.uri = "ws://" CONFIG_SERVER ":80/clients/socket";
+    websocket_cfg.uri = "ws://" CONFIG_SERVER ":" CONFIG_PORT "/clients/socket";
 
     ESP_LOGI(WS_TAG, "Connecting to %s...", websocket_cfg.uri);
 

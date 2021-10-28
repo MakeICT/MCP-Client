@@ -71,7 +71,7 @@ int MCPLink::AuthenticateNFC(char* nfc_id) {
     if(WebsocketConnected()){
         char message[128];
 
-        int len = sprintf(message, "{\"message\":\"verify\", \"client_id\": 1, \"nfc_id\":\"04d76b1a8f4980\"}");
+        int len = sprintf(message, "{\"message\":\"verify\", \"client_id\": %d, \"nfc_id\":\"%s\"}", client_id, nfc_id);
         
         data = websocket_send_and_receive(message, len);
     }
