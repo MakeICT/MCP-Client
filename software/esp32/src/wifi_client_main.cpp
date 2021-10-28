@@ -142,7 +142,7 @@ static void setup_light_patterns()
     authorizing_pattern->AddState(100, LED_OFF, LED_YELLOW, LED_OFF, LED_YELLOW);
     authorizing_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
 
-    card_reject_pattern->AddState(100, LED_OFF, LED_RED, LED_RED, LED_RED);
+    card_reject_pattern->AddState(100, LED_RED, LED_RED, LED_RED, LED_RED);
     card_reject_pattern->AddState(100, LED_OFF, LED_OFF, LED_OFF, LED_OFF);
 
     unlocking_door_pattern->AddState(250, LED_GREEN, LED_YELLOW, LED_GREEN, LED_YELLOW);
