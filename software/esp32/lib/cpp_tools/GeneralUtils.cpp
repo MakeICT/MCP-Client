@@ -509,6 +509,10 @@ const char* GeneralUtils::wifiErrorToString(uint8_t errCode) {
 		return "WIFI_REASON_CONNECTION_FAIL";
 	case WIFI_REASON_INVALID_PMKID:
 		return "WIFI_REASON_INVALID_PMKID";
+	case WIFI_REASON_AP_TSF_RESET:
+		return "WIFI_REASON_AP_TSF_RESET";
+	case WIFI_REASON_ROAMING:
+		return "WIFI_REASON_ROAMING";
 	}
 	return "Unknown ESP_ERR error";
 } // wifiErrorToString
