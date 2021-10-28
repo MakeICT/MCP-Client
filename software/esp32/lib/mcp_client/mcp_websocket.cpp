@@ -151,6 +151,6 @@ bool websocket_connected()
 uint64_t websocket_idle_time()
 {
     uint32_t idle_time = esp_timer_get_time() - ws_last_response_received;
-    ESP_LOGI(WS_TAG, "Idle time: %d", idle_time);
+    ESP_LOGI(WS_TAG, "Idle time: %dms", idle_time/1000);
     return idle_time;
 }

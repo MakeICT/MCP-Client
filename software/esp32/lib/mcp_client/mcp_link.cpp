@@ -6,14 +6,14 @@ TaskHandle_t heartbeat_task_handle = NULL;
 
 static void heartbeat_task(void *arg)
 {
-    UBaseType_t uxHighWaterMark;
+    UBaseType_t uxHighWaterMark = 0;
 
     uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-    ESP_LOGI(WS_TAG, "Task stack high water mark: %d", uxHighWaterMark);
+    ESP_LOGI(LINK_TAG, "Task stack high water mark: %d", uxHighWaterMark);
     
     while(1)
     {
-        ESP_LOGI(WS_TAG, "Heartbeat task");
+        ESP_LOGI(LINK_TAG, "Heartbeat task");
         if(websocket_connected()) {
             char message[128];
 
@@ -29,7 +29,10 @@ static void heartbeat_task(void *arg)
             free(data);
         }
         printf("Free heap: %d\n", xPortGetFreeHeapSize());
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        vTaskDelay(30000 / portTICK_PERIOD_MS);
+
+        uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+        ESP_LOGI(LINK_TAG, "Task stack high water mark: %d", uxHighWaterMark);
     }
     vTaskDelete(NULL);
 }
@@ -45,7 +48,7 @@ bool MCPLink::ConnectWebsocket()
     if(started) {
         if(heartbeat_task_handle != NULL)
             vTaskDelete(heartbeat_task_handle);
-        xTaskCreate(heartbeat_task, "heartbeat", 2048, NULL, 10, &heartbeat_task_handle);
+        xTaskCreate(heartbeat_task, "heartbeat", 4096, NULL, 10, &heartbeat_task_handle);
     }
     return started;
 }
