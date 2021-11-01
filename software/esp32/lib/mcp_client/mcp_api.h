@@ -14,7 +14,7 @@
 extern const char *API_TAG;
 
 /* Constants that aren't configurable in menuconfig */
-#define CLIENT_TAG CONFIG_CLIENT_TAG
+#define CLIENT_ID CONFIG_CLIENT_ID
 
 
 extern int client_id;

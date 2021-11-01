@@ -1,6 +1,6 @@
 menu "MCP Configuration"
 
-	config CLIENT_TAG
+	config CLIENT_ID
 	    int "Client ID"
 	    default "99"
 	    help

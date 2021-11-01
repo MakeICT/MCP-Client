@@ -415,6 +415,9 @@ void init(void)
     network.setup(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
     // network.setup();
     network.init();
+    char hostname[16];
+    snprintf(hostname, 16, "mcp-client-%d", CLIENT_ID);
+    network.setHostname(hostname);
     network.start();
 
     server.ConnectWebsocket();

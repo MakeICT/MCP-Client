@@ -21,6 +21,18 @@ uint8_t Network::setup()
     return 0;
 }
 
+uint8_t Network::setHostname(char* hostname)
+{
+    if(this->use_wifi) {
+        ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, hostname));
+    }
+    else {
+        ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_ETH, hostname));
+    }
+
+    return 0;
+}
+
 uint8_t Network::init()
 {
     uint8_t ret = 0;

@@ -18,6 +18,7 @@ class Network
 
         uint8_t setup(char* wifi_ssid, char* wifi_pass);
         uint8_t setup();
+        uint8_t setHostname(char* hostname);
         uint8_t init();
         uint8_t start();
         uint8_t restart();

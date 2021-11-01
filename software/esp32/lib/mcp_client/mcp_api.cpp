@@ -2,7 +2,7 @@
 
 const char *API_TAG = "MCP_API";
 
-int client_id = CLIENT_TAG;
+int client_id = CLIENT_ID;
 char* end_flag = "[[[HTTP_END]]]";
 QueueHandle_t request_queue;
 QueueHandle_t response_queue;
