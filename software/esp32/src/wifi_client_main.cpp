@@ -89,7 +89,7 @@ extern "C"
     void app_main();
 }
 
-static int state = STATE_SYSTEM_START;
+static int state = STATE_UNKNOWN;
 //int power_on_time;
 //int current_detected_time;
 
