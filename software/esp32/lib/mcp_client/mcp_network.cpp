@@ -27,6 +27,12 @@ uint8_t Network::init()
 
     if(use_wifi){
         ret = wifiInit(wifi_ssid, wifi_pass);
+
+        // disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
+        // https://github.com/espressif/esp-idf/issues/1096
+        // https://github.com/espressif/esp-idf/issues/4585
+        ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+
     }
     else {
         ret = ethernet_init();
