@@ -3,7 +3,7 @@
 
 
 bool Reader::init() {
-    mfrc522.PCD_Init();     // Init MFRC522
+    mfrc522.PCD_Init(UINT8_MAX, UINT8_MAX);     // Init MFRC522
     mfrc522.PCD_DumpVersionToSerial();  // Show details of PCD - MFRC522 Card Reader details
     ESP_LOGD(LOG_TAG, "Scan PICC to see UID, SAK, type, and data blocks...");
     return true;
