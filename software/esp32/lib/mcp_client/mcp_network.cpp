@@ -39,6 +39,9 @@ uint8_t Network::init()
 
     if(use_wifi){
         ret = wifiInit(wifi_ssid, wifi_pass);
+        #ifdef CONFIG_STATIC_IP
+            wifi_set_static_ip(CONFIG_CLIENT_IP, CONFIG_GATEWAY_IP, CONFIG_NETMASK);
+        #endif
 
         // disable wifi power saving to prevent GPIO 36 and 39 from constantly creating interrupts
         // https://github.com/espressif/esp-idf/issues/1096
@@ -48,6 +51,9 @@ uint8_t Network::init()
     }
     else {
         ret = ethernet_init();
+        #ifdef CONFIG_STATIC_IP
+            ethernet_set_static_ip(CONFIG_CLIENT_IP, CONFIG_GATEWAY_IP, CONFIG_NETMASK);
+        #endif
     }
 
     return ret;

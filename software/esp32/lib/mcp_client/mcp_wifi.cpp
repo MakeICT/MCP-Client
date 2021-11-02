@@ -6,6 +6,7 @@ const char *WIFI_TAG = "MCP_WIFI";
 static EventGroupHandle_t wifi_event_group;
 
 
+esp_netif_t *wifi_netif;
 static int s_retry_num = 0;
 
 static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
@@ -57,6 +58,24 @@ int wifiInit(char* ssid, char* pass)
     ESP_LOGI(WIFI_TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
+    
+    wifi_netif = esp_netif_create_default_wifi_sta();
+    
+    return 0;
+}
+
+int wifi_set_static_ip(char* ip, char* gw, char* nm)
+{
+    esp_netif_dhcpc_stop(wifi_netif);
+
+    esp_netif_ip_info_t ip_info;
+
+    // IP4_ADDR(&ip_info.ip, 10, 0, 0, 250); 
+    esp_netif_str_to_ip4(ip, &ip_info.ip); 
+   	esp_netif_str_to_ip4(gw, &ip_info.gw);
+   	esp_netif_str_to_ip4(nm, &ip_info.netmask);
+
+    esp_netif_set_ip_info(wifi_netif, &ip_info);
 
     return 0;
 }

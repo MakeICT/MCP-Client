@@ -15,7 +15,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
-#include "tcpip_adapter.h"
+#include "esp_netif.h"
 #include "esp_eth.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -40,6 +40,7 @@ int ethernet_init();
 int ethernet_reset();
 int ethernet_start();
 int ethernet_stop();
+int ethernet_set_static_ip(char* ip, char* gw, char* nm); 
 bool ethernetIsConnected();
 
 #endif 

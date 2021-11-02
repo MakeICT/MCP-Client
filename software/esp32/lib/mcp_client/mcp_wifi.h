@@ -27,6 +27,7 @@ uint8_t wifiInit();
 uint8_t wifiStart();
 uint8_t wifiStop();
 uint8_t wifiRestart();
+int wifi_set_static_ip(char* ip, char* gw, char* nm);
 bool wifiIsConnected();
 
 #endif

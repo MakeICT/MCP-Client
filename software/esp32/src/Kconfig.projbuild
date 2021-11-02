@@ -25,6 +25,30 @@ menu "MCP Configuration"
 			WiFi password (WPA or WPA2) for the example to use.
 	
 			Can be left blank if the network has no security set.
+
+	config STATIC_IP
+		bool "Set static IP"
+		default False
+		help
+			Disable DHCP and set client IP, gateway, and netmask statically
+
+	config CLIENT_IP
+		string "Client IP" if STATIC_IP
+		default "192.168.1.100"
+		help
+			Static client IP address	
+			
+	config GATEWAY_IP
+		string "Gateway IP" if STATIC_IP
+		default "192.168.1.1"
+		help
+			Default gateway IP address	
+			
+	config NETMASK
+		string "Netmask" if STATIC_IP
+		default "255.255.255.0"
+		help
+			Netmask for static network
 	
 	config SERVER
 	    string "Server Address"
