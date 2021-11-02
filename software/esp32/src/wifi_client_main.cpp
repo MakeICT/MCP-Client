@@ -411,9 +411,12 @@ void init(void)
     }
 
     ESP_ERROR_CHECK(ret);
-
-    network.setup(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
-    // network.setup();
+    
+    #ifdef CONFIG_USE_WIFI
+        network.setup(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+    #else
+        network.setup();
+    #endif
     network.init();
     char hostname[16];
     snprintf(hostname, 16, "mcp-client-%d", CLIENT_ID);

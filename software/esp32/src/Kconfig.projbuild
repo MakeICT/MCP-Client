@@ -5,15 +5,21 @@ menu "MCP Configuration"
 	    default "99"
 	    help
 	        Unique id for client
+
+	config USE_WIFI
+		bool "Use WiFi"
+		default False
+		help 
+			If checked Wifi will be used, otherwise ethernet will be used.
 	
 	config WIFI_SSID
-	    string "WiFi SSID"
+	    string "WiFi SSID" if USE_WIFI
 		default "myssid"
 		help
 			SSID (network name) for the example to connect to.
 	
 	config WIFI_PASSWORD
-	    string "WiFi Password"
+	    string "WiFi Password" if USE_WIFI
 		default "mypassword"
 		help
 			WiFi password (WPA or WPA2) for the example to use.
