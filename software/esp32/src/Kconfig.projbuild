@@ -25,12 +25,6 @@ menu "MCP Configuration"
 		default "securitytest.makeict.org"
 		help
 			Address of Master Control Program instance to connect to.
-
-	config SERVER2
-	    string "Server Address2"
-		default "securitytest2.makeict.org"
-		help
-			Address of Backup Master Control Program instance to connect to.
 	
 	config PORT
 	    string "Server Port"
