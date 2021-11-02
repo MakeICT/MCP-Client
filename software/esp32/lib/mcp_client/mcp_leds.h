@@ -4,7 +4,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <esp_system.h>
-#include <esp_event_loop.h>
+#include <esp_event.h>
 #include <esp_log.h>
 
 extern const char *LED_TAG;

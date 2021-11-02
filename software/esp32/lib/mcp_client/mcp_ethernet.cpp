@@ -71,9 +71,6 @@ int ethernet_init()
     esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
     eth_netif = esp_netif_new(&cfg);
     
-    // ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_ERROR_CHECK( esp_event_loop_init(NULL, NULL) );
-    
     ESP_ERROR_CHECK(esp_eth_set_default_handlers(eth_netif));
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
@@ -96,7 +93,7 @@ int ethernet_init()
     return 0;  // indicate success
 }
 
-int ethernet_set_static_ip(char* ip, char* gw, char* nm)
+int ethernet_set_static_ip(const char* ip, const char* gw, const char* nm)
 {
     esp_netif_dhcpc_stop(eth_netif);
 
