@@ -16,7 +16,7 @@ class Network
     public:
         Network();
 
-        uint8_t setup(char* wifi_ssid, char* wifi_pass);
+        uint8_t setup(const char* wifi_ssid, const char* wifi_pass);
         uint8_t setup();
         uint8_t setHostname(char* hostname);
         uint8_t init();

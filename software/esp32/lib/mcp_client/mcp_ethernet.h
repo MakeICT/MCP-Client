@@ -40,7 +40,7 @@ int ethernet_init();
 int ethernet_reset();
 int ethernet_start();
 int ethernet_stop();
-int ethernet_set_static_ip(char* ip, char* gw, char* nm); 
+int ethernet_set_static_ip(const char* ip, const char* gw, const char* nm); 
 bool ethernetIsConnected();
 
 #endif 

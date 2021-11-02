@@ -76,7 +76,7 @@ int wifiInit(char* ssid, char* pass)
     return 0;
 }
 
-int wifi_set_static_ip(char* ip, char* gw, char* nm)
+int wifi_set_static_ip(const char* ip, const char* gw, const char* nm)
 {
     esp_netif_dhcpc_stop(wifi_netif);
 

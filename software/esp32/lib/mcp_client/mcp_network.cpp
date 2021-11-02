@@ -5,10 +5,10 @@ Network::Network()
 
 }
 
-uint8_t Network::setup(char* ssid, char* pass)
+uint8_t Network::setup(const char* ssid, const char* pass)
 {
-    this->wifi_ssid = ssid;
-    this->wifi_pass = pass;
+    this->wifi_ssid = (char*) ssid;
+    this->wifi_pass = (char*) pass;
     this->use_wifi = true;
 
     return 0;

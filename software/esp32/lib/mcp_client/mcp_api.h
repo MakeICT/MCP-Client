@@ -21,7 +21,7 @@ extern int client_id;
 extern QueueHandle_t request_queue;
 extern QueueHandle_t response_queue;
 
-extern char* end_flag;
+extern const char* end_flag;
 
 typedef struct {
     esp_http_client_method_t method = HTTP_METHOD_GET;
