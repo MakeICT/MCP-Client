@@ -49,6 +49,18 @@ menu "MCP Configuration"
 		default "255.255.255.0"
 		help
 			Netmask for static network
+
+	config OVERRIDE_HOSTNAME
+		bool "Set a custom hostname"
+		default False
+		help
+			Set a custom hostname. If not checked hostname will default to "mcp-client-<ID>".
+
+	config HOSTNAME
+		string "Hostname" if OVERRIDE_HOSTNAME
+		default "mcp-client-test"
+		help
+			Hostname
 	
 	config SERVER
 	    string "Server Address"

@@ -417,9 +417,13 @@ void init(void)
         network.setup();
     #endif
     network.init();
-    char hostname[16];
-    snprintf(hostname, 16, "mcp-client-%d", CLIENT_ID);
-    network.setHostname(hostname);
+    #ifdef CONFIG_OVERRIDE_HOSTNAME
+        network.setHostname(CONFIG_HOSTNAME);
+    #else
+        char hostname[16];
+        snprintf(hostname, 16, "mcp-client-%d", CLIENT_ID);
+        network.setHostname(hostname);
+    #endif
     network.start();
 
     server.ConnectWebsocket();
